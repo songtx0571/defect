@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>聊天记录</title>
+
+<link rel="stylesheet" href="../../../layui.css">
+<style>
+body .layim-chat-main{height: auto;}
+</style>
+</head>
+<body>
+
+<div class="layim-chat-main">
+  <ul id="LAY_view"></ul>
+</div>
+
+<div id="LAY_page" style="margin: 0 10px;"></div>
+
+
+<textarea title="消息模版" id="LAY_tpl" style="display:none;">
+{{# layui.each(d.data, function(index, item){
+  if(item.id == parent.layui.layim.cache().mine.id){ }}
+    <li class="layim-chat-mine"><div class="layim-chat-user"><img src="{{ item.avatar }}"><cite><i>{{ layui.data.date(item.timestamp) }}</i>{{ item.username }}</cite></div><div class="layim-chat-text">{{ layui.layim.content(item.content) }}</div></li>
+  {{# } else { }}
+    <li><div class="layim-chat-user"><img src="{{ item.avatar }}"><cite>{{ item.username }}<i>{{ layui.data.date(item.timestamp) }}</i></cite></div><div class="layim-chat-text">{{ layui.layim.content(item.content) }}</div></li>
+  {{# }
+}); }}
+</textarea>
+
+<!-- 
+上述模版采用了 laytpl 语法，不了解的同学可以去看下文档：http://www.layui.com/doc/modules/laytpl.html
+
+-->
+
+
+<script src="../../../../layui.js"></script>
+<script>
+layui.use(['layim', 'laypage'], function(){
+  var layim = layui.layim
+  ,layer = layui.layer
+  ,laytpl = layui.laytpl
+  ,$ = layui.jquery
+  ,laypage = layui.laypage;
+
+  //开始请求聊天记录
+  var param =  location.search;//获得URL参数。该窗口url会携带会话id和type，他们是你请求聊天记录的重要凭据
+
+    var res = "";
+    //实际使用时，下述的res一般是通过Ajax获得，而此处仅仅只是演示数据格式
+    // 步骤一:创建异步对象
+    var ajax = new XMLHttpRequest();
+    //获取地址栏参数，name:参数名称
+    function getUrlParms(name){
+        var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+        var r = window.location.search.substr(1).match(reg);
+        if(r!=null)
+            return unescape(r[2]);
+        return null;
+    }
+    var id = getUrlParms("id");
+    var type = getUrlParms("type");
+
+    // var  url='http://192.168.1.89:8080/message/getChatRecord?id='+id+'&type='+type;
+    var  url='/message/getChatRecord?id='+id+'&type='+type;
+    //步骤二:设置请求的url参数,参数一是请求的类型,参数二是请求的url,可以带参数,动态的传递参数starName到服务端
+    ajax.open('get',url);
+    //步骤三:发送请求
+    ajax.send();
+    //步骤四:注册事件 onreadystatechange 状态改变就会调用
+    ajax.onreadystatechange = function () {
+        if (ajax.readyState==4 &&ajax.status==200) {
+            //步骤五 如果能够进到这个判断 说明 数据 完美的回来了,并且请求的页面是存在的
+            res = JSON.parse(ajax.responseText);
+            var html = laytpl(LAY_tpl.value).render({
+                data: res.data
+            });
+            $('#LAY_view').html(html);
+        }
+    };
+});
+</script>
+</body>
+</html>

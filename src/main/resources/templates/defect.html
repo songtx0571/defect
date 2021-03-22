@@ -1,247 +1,427 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<link rel="shortcut icon" href="../img/favicon.ico" type="image/x-icon" />
-<script type="text/javascript"  src="../js/jquery-3.2.1.js"></script>
-<script type="text/javascript"  src="../js/defect/defect.js"></script>
-<script type="text/javascript"  src="../layer/layer.js"></script>
-<script type="text/javascript"  src="../layui/layui.js"></script>
-<script type="text/javascript"  src="../js/jQuery.print.min.js"></script>
-
-<script type="text/javascript"  src="../js/excel/tableExport.js"></script>
-<script type="text/javascript"  src="../js/excel/fileSaver.min.js"></script>
-<script type="text/javascript"  src="../js/excel/jquery.base64.js"></script>
-
-<link rel="stylesheet" href="../layui/css/layui.css" media="screen"/>
-<link rel="stylesheet" type="text/css" href="../DataTables-1.10.15/media/css/jquery.dataTables.css"/>
-<link rel="stylesheet" type="text/css" href="../Buttons-1.4.2/css/buttons.dataTables.min.css"/>
-<link rel="stylesheet" type="text/css" href="../Select-1.2.3/css/select.dataTables.min.css"/>
-<link rel="stylesheet" type="text/css" href="../bootstrap/css/bootstrap-theme.min.css"/>
-<link rel="stylesheet" type="text/css" href="../bootstrap/css/bootstrap.min.css"/>
-
-<!-- DataTables -->
-<script type="text/javascript" charset="utf8" src="../DataTables-1.10.15/media/js/jquery.dataTables.js"></script>
-<script type="text/javascript" charset="utf8" src="../Select-1.2.3/js/dataTables.select.js"></script>
-<script type="text/javascript" charset="utf8" src="../Select-1.2.3/js/dataTables.select.min.js"></script>
-<script type="text/javascript" charset="utf8" src="../Buttons-1.4.2/js/buttons.html5.min.js"></script>
-<script type="text/javascript" charset="utf8" src="../Buttons-1.4.2/js/buttons.print.min.js"></script>
-
-<link rel="stylesheet" href="../css/defect/defect.css" media="screen"/>
-<link rel="stylesheet" href="../css/print.css" media="print"/>
-<title>缺陷清单</title>
-
+    <meta charset="UTF-8">
+    <meta name="referrer" content="origin">
+    <title></title>
+    <script src="../js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../js/defect.js" type="text/javascript" charset="utf-8"></script>
+    <link rel="stylesheet" href="../css/defect.css">
+    <link rel="stylesheet" href="../layui/css/layui.css">
+    <script src="../layui/layui.js" type="text/javascript" charset="utf-8"></script>
+    <link rel="stylesheet" href="../layui/formSelects-v4.css">
+    <script src="../layui/formSelects-v4.js" type="text/javascript" charset="utf-8"></script>
+    <script type="text/javascript"  src="../js/ajaxfileupload.js"></script>
 </head>
-<body id='body'>
-	<div id='partsBanner' onclick="closeAddParts()"></div>
-	<div id='partsReordBanner' onclick="closePartsReord()"></div>
-	<div id='feedbackBanner'></div>
-	<div id='divSelect'>
-		炉号<select id="location" onchange="locationChange()"></select>
-		系统<select id='system' onchange='systemChange()'></select>
-	</div>
-	<div id="divTable">
-		<table class="display" id="DataTable" style="text-align: center;">
-			<thead>
-            	<tr>
-            		<th></th>
-               		<th>缺陷编号</th>
-                    <th>缺陷描述</th>
-                    <th>创建时间</th>
-                    <th>所属系统</th>
-                   	<th>重大级别</th>
-                    <th>创建人</th>
-                    <th>处理部门</th>
-                    <th>状态</th>
-                    <th>计划完成时间</th>
-                    <th>实际完成时间</th>
-                    <th>缺陷图片</th>
-                    <th>认领人</th>
-                    <th>消缺反馈</th>
-                    <th>值班确认</th>
-                    <th>甲方确认</th>
-                </tr>
+<body>
+<div class="warp">
+    <!-- 头部 -->
+    <div class="top">
+        <div style="width: 100%;height: 50px;">
+            <button type="button" class="layui-btn floatBtn" onclick="getChecked('0')">全部缺陷</button>
+            <button type="button" class="layui-btn floatBtn" onclick="getChecked('1')">未认领</button>
+            <button type="button" class="layui-btn floatBtn" onclick="getChecked('2')">消缺中</button>
+            <button type="button" class="layui-btn floatBtn" onclick="getChecked('3')">已消缺</button>
+            <button type="button" class="layui-btn floatBtn" onclick="getChecked('4')">已完成</button>
+        </div>
+        <div style="width: 100%;height: 50px;">
+            <form class="layui-form" action="" style="float: left;margin-right: 20px;">
+                <input type="hidden" id="systemHidden">
+                <input type="hidden" id="equipmentHidden">
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <select name="modules" lay-verify="required" lay-filter="system" lay-search="" id="system"></select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <select name="modules" lay-verify="required" lay-filter="equipment" lay-search="" id="equipment"></select>
+                    </div>
+                </div>
+            </form>
+            <!--<input placeholder="模糊搜索" type="text" style="float: left;width: 250px;height: 36px;padding-left:10px;border: 1px solid #e6e6e6;margin-right: 20px;" id="keyword">-->
+            <button type="button" class="layui-btn layui-btn-normal floatBtn" onclick="addDefect()">新增&nbsp;&nbsp;+</button>
+        </div>
+    </div>
+    <!-- 表格内容 -->
+    <div class="content">
+        <table id="demo" lay-filter="test"></table>
+        <script type="text/html" id="tbMajorBar">
+            {{#  if(d.level == 0){ }}
+            <span>0类</span>
+            {{#  } else if(d.level == 1) { }}
+            <span>1类</span>
+            {{#  } else if(d.level == 2) { }}
+            <span>2类</span>
+            {{#  } else if(d.level == 3) { }}
+            <span>3类</span>
+            {{#  } else if(d.level == 4) { }}
+            <span>4类</span>
+            {{#  } }}
+        </script>
+        <script type="text/html" id="tbTypeBar">
+            {{#  if(d.type == 1){ }}
+            <span style="color: red;">未认领</span>
+            {{#  } else if(d.type == 2) { }}
+            <span style="color: #ff8100;">消缺中</span>
+            {{#  } else if(d.type == 3) { }}
+            <span style="color: green;">已消缺</span>
+            {{#  } else if(d.type == 4) { }}
+            <span style="color: green;">已完成</span>
+            {{#  } }}
+        </script>
+        <script type="text/html" id="tbBeOnDutyBar">
+            {{#  if(d.type == 4){ }}
+            <span style="color: green;">已确认</span>
+            {{#  } else { }}
+            <a class="layui-btn layui-btn-xs" lay-event="beOnDuty">值班确认</a>
+            {{#  } }}
+        </script>
+        <script type="text/html" id="tbClaimBar">
+            {{#  if(d.empIds == null){ }}
+            <a class="layui-btn layui-btn-xs" lay-event="claim">认领</a>
+            {{#  } else { }}
+            <span style="color: green;">{{d.claimantName}}</span>
+            {{#  } }}
+        </script>
+        <script type="text/html" id="tbHandleBar">
+            {{#  if(d.type == 1){ }}
+            <a class="layui-btn layui-btn-xs" lay-event="handle">消缺反馈</a>
+            {{#  } else if(d.type == 2) { }}
+            <a class="layui-btn layui-btn-xs" lay-event="handle">消缺反馈</a>
+            {{#  } else if(d.type == 3) { }}
+            <span style="color: green;">已消缺</span>
+            {{#  } else if(d.type == 4) { }}
+            <span style="color: green;">已完成</span>
+            {{#  } }}
+        </script>
+    </div>
+    <!-- 新增 -->
+    <div class="addDefectDiv">
+        <table>
+            <thead>
+            <tr><td colspan="4" style="text-align: center;font-weight: bold;font-size: 18px;">新增缺陷</td></tr>
             </thead>
-        </table>
-	</div>
-	
-	<div id='Planedtime'>
-		<p id='PlanedtimeP'>请填写计划完成时间~</p>
-		<input type="text" class="layui-input" id="test1">
-		<p id='PlanedtimeP2'><button id='PlanedtimeInsert' onclick="changePlanedtime()">确定</button><button id='PlanedtimeBack' onclick='closePlanedtime()'>取消</button></p>
-	</div>
-	
-	<div id='changeStatus'>
-		<p id='changeStatusP1'>值班确认已完成本次消缺吗？</p>
-		<p id='changeStatusP2'><button id='PlanedtimeInsert' onclick="changeStatus()">确定</button><button id='PlanedtimeBack' onclick='closeChangeStatus()'>取消</button></p>
-	</div>
-	
-	<div id='defeated'>
-		<p id='defeatedP1'>缺陷已完成不可更改反馈单!</p>
-		<p id='defeatedP2'><button id='PlanedtimeInsert' onclick="closeDefeated()">确定</button></p>
-	</div>
-	
-	<div id='divImg'>
-		<img id='img'/>
-		<p id='defeatedP2'><button id='PlanedtimeInsert' onclick="closeDivImg()">确定</button></p>
-	</div>
-	
-	<div id='delDefect'>
-		<p id='delDefectP1'>确定删除该缺陷吗？</p>
-		<p id='delDefectP2'><button id='PlanedtimeInsert' onclick="delDefect1()">确定</button><button id='PlanedtimeBack' onclick='closeDelDefect()'>取消</button></p>
-	</div>
-	
-	<div id='addCheck'>
-		<p id='delDefectP1'>确定添加到检修记录吗？</p>
-		<p id='delDefectP2'><button id='PlanedtimeInsert' onclick="addCheck1()">确定</button><button id='PlanedtimeBack' onclick='closeAddCheck()'>取消</button></p>
-	</div>
-	
-	
-	<div id='feedback'>
-		<table id='feedbackTable'>
-			<thead>
-				<tr><th colspan="5">处理反馈单<input id='feedbackId' type="hidden"/><input id='feedbackType' type="hidden"/></th></tr>
-			</thead>
-			<tbody>
-				<tr>
-					<th >重大级别</th>
-					<td ><span id='feedbackLevel'>0类</span></td>
-					<th >检修部门</th>
-					<td ><span id='feedbackDepartment'>机务</span></td>
-					<td><span id='feedbackTime'>2019-03</span></td>
-				</tr>
-				<tr>
-					<th>缺陷位置</th>
-					<td colspan="4">
-						<span id='feedbacklocation1'>1#锅炉</span>
-						<span id='feedbacklocation2'>脱硫系统</span>
-						<span id='feedbacklocation3'>循环泵1A</span>
-						<span id='feedbacklocation4'>循环泵1A</span>
-					</td>
-				</tr>
-				<tr>
-					<th>缺陷反馈</th>
-					<td colspan="4">
-						<textarea id=feedbackAbs rows="5" cols="50" maxlength="100"></textarea>
-					</td>
-				</tr>
-				<tr>
-					<th>缺陷情况</th>
-					<td colspan="4">
-						<textarea id='situation' rows="5" cols="50" maxlength="100"></textarea>
-					</td>
-				</tr>
-				<tr>
-					<th>处理措施</th>
-					<td colspan="4">
-						<textarea id='method' rows="5" cols="50" maxlength="100" ></textarea>
-					</td>
-				</tr>
-				<tr>
-					<th>遗留问题</th>
-					<td colspan="4">
-						<textarea id='problem' rows="5" cols="50" maxlength="100" ></textarea>
-					</td>
-				</tr>
-				<tr>
-					<th>备注</th>
-					<td colspan="4">
-						<textarea id='remark' rows="5" cols="50" maxlength="100" ></textarea>
-					</td>
-				</tr>
-				<tr>
-					<th>填写人员</th>
-					<td colspan="4" id='completername'>管理员</td>
-				</tr>
-			</tbody>
-			<thead>
-				<tr>
-					<th colspan="5">
-						<button id='FeedbackAdd' onclick="insertFeedback()">确定</button>
-						<button id='addKnowledge' onclick="addKnowledge()">添加到知识库</button>
-						<button id='feedbackClose' onclick="closeFeedback()">取消</button>
-					</th>
-				</tr>
-			</thead>
-		</table>
-	</div>
-
-	<div id="partsDiv">
-		<button type="button" class="activeTab" onclick="changeDefectNum(0)">全部缺陷</button>&nbsp;&nbsp; 
-		<button type="button" class="activeTab" onclick="changeDefectNum(1)">未认领</button>&nbsp;&nbsp;
-        <button type="button" class="activeTab" onclick="changeDefectNum(2)">消缺中</button>&nbsp;&nbsp;
-		<button type="button" class="activeTab" onclick="changeDefectNum(3)">已完成</button>&nbsp;&nbsp;
-		<button type="button" class="activeTab DefectNum" onclick="changeDefectNum(4)">配件认领单</button>&nbsp;&nbsp;
-		
-		
-		<button type="button" class="partsExport" id="changeDefect" onclick="partsExport()">导出</button>
-		<button type="button" class="partsPrint" id="changeDefect" onclick="partsPrint()">打印</button>
-		<button type="button" class="partsEmail" id="changeDefect" onclick="partsEmail()">邮件</button>
-		<button type="button" class="partsRecord" id="changeDefect" onclick="partsRecord()">配件认领记录</button>
-		<button type="button" class="partsConfirm" id="changeDefect" onclick="partsConfirm()">确认认领</button>
-		<button type="button" class="partsAdd" id="changeDefect" onclick="partsAdd()">新增</button>
-		<table id="partsTable" >
-			<thead>
-            	<tr>
-            		<th width='8%'>配件编号</th>
-            		<th width='20%'>名称</th>
-            		<th width='30%'>规格</th>
-            		<th width='10%'>型号</th>
-            		<th width='10%'>生产厂家</th>
-            		<th width='15%'>认领数量</th>
-            		<th width='7%'>操作</th>
-            		<th id='ExportTr'>认领数量</th>
-                </tr>
-            </thead>
-            <tbody id='partsTbody'>
-            	
+            <tbody>
+            <tr>
+                <th>重大级别</th>
+                <td>
+                    <form class="layui-form" action="" style="float: left;">
+                        <input type="hidden" id="levelHidden">
+                        <div class="layui-inline">
+                            <div class="layui-input-inline">
+                                <select name="modules" lay-verify="required" lay-filter="level" lay-search="" id="level">
+                                    <option value="0">0类</option>
+                                    <option value="1">1类</option>
+                                    <option value="2">2类</option>
+                                    <option value="3">3类</option>
+                                    <option value="4">4类</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </td>
+                <th>检修类别</th>
+                <td>
+                    <form class="layui-form" action="" style="float: left;">
+                        <input type="hidden" id="maintenanceCategoryHidden">
+                        <div class="layui-inline">
+                            <div class="layui-input-inline">
+                                <select name="modules" lay-verify="required" lay-filter="maintenanceCategory" lay-search="" id="maintenanceCategory">
+                                    <option value='1'>机务</option>
+                                    <option value='2'>电仪</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </td>
+            </tr>
+            <tr>
+                <th>缺陷位置</th>
+                <td colspan="3" id='defectLocation' style="padding-bottom: 10px;box-sizing: border-box;">
+                    <form class="layui-form" action="" style="float: left;">
+                        <input type="hidden" id="addSystemHidden">
+                        <input type="hidden" id="addEquipmentHidden">
+                        <div class="layui-inline">
+                            <div class="layui-input-inline" style="width: 183px;">
+                                <select name="modules" lay-verify="required" lay-filter="addSystem" lay-search="" id="addSystem"></select>
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <div class="layui-input-inline" style="width: 182px;">
+                                <select name="modules" lay-verify="required" lay-filter="addEquipment" lay-search="" id="addEquipment"></select>
+                            </div>
+                        </div>
+                    </form>
+                </td>
+            </tr>
+            <tr>
+                <th>缺陷描述</th>
+                <td colspan="3"><textarea id='addAbs' rows="5" cols="50" maxlength="100" style="text-indent: 10px;"></textarea></td>
+            </tr>
+            <tr>
+                <th>缺陷图片</th>
+                <td colspan="3">
+                    <img src="../img/Add.png" style="float: left;margin-top: 10px;"  id="addImg1">
+                    <input type="file" id='file' name='file' style="display: none;" accept="image/gif,image/jpeg,image/jpg,image/png" onchange="fileChange(event,'file','one')">
+                    <img src="" id="img-change1" class="img-change">
+                    <img src="../img/reduce.png" style="float: left;margin-top: 10px;margin-left: 10px;" id="reduceImgAdd" onclick="reduceImg('reduceImgAdd')">
+                </td>
+            </tr>
+            <tr>
+                <th>申请人员<input type="hidden" id='addUserId'></th>
+                <td colspan="3" id='addCreaterName'></td>
+            </tr>
+            <tr>
+                <th>申请日期</th>
+                <td colspan="3" id='createTime'></td>
+            </tr>
             </tbody>
+            <thead>
+            <tr>
+                <td colspan="4" align="center">
+                    <button type="button" class="layui-btn layui-btn-normal"  onclick="insert()">确定</button>
+                    <button type="button" class="layui-btn" onclick="cancel()">取消</button>
+                </td>
+            </tr>
+            </thead>
         </table>
-	</div>
-	
-	
-	<div id='addParts'>
-		<table class="display" id="PartsTable" style="text-align: center;">
-			<thead>
-            	<tr>
-            		<th>配件编号</th>
-            		<th>名称</th>
-            		<th>规格</th>
-            		<th>型号</th>
-            		<th>生产厂家</th>
-            		<th>操作</th>
-            	</tr>
-			</thead>
-		</table>
-	</div>
+    </div>
+    <!-- 详细信息 -->
+    <div class="detailedInfoDiv">
+        <p id="detailedInfoP" style="display: none;"></p>
+        <table>
+            <thead>
+            <tr><td colspan="10" style="text-align: center;font-weight: bold;font-size: 18px;">缺陷详单</td></tr>
+            </thead>
+            <tbody>
+            <tr>
+                <th style="padding-right: 8px;box-sizing: border-box;">缺陷编号</th>
+                <td id="detailedInfoId"></td>
+                <th style="padding-right: 8px;box-sizing: border-box;">所属系统</th>
+                <td colspan="2" id="detailedInfoSys"></td>
+                <th style="padding-right: 8px;box-sizing: border-box;">级别</th>
+                <td id="detailedInfoLevel"></td>
+                <th style="padding-right: 8px;box-sizing: border-box;">处理类别</th>
+                <td colspan="2" id="detailedInfoMan"></td>
+            </tr>
+            <tr>
+                <th style="padding-right: 8px;box-sizing: border-box;">状态</th>
+                <td colspan="2" id="detailedInfoStatus"></td>
+                <th style="padding-right: 8px;box-sizing: border-box;">创建时间</th>
+                <td colspan="3" id="detailedInfoCreateTime"></td>
+                <th style="padding-right: 8px;box-sizing: border-box;">创建人</th>
+                <td colspan="2" id="detailedInfoCreateName"></td>
 
-	<div id='recordParts'>
-		<table id='recordPartsTable'>
-			<thead id='recordPartsThead'>
-				<tr>
-					<th width="20%">单号</th>
-					<th width="25%">提交时间</th>
-					<th width="15%">提交人</th>
-					<th width="20%">总件数</th>
-					<th width="20%">备注</th>
-				</tr>
-			</thead>
-			<tbody id='recordPartsTbody'>
-				
-			</tbody>
-		</table>
-	</div>
-	
-	<div id='Email'>
-		<p id='PlanedtimeP'>请输入发送邮箱~</p>
-		<input type="text" id="emailNumber"/>
-		<p id='PlanedtimeP2'><button id='PlanedtimeInsert' onclick="sendEmail()">确定</button><button id='PlanedtimeBack' onclick='closeEmail()'>取消</button></p>
-	</div>
-	
-	<div id='error'>
-		<p id='errorP1'>不可以为空!</p>
-		<p id='errorP2'><button id='errorInsert' onclick="closeError()">确定</button></p>
-	</div>
-
+            </tr>
+            <tr>
+                <th style="padding-right: 8px;box-sizing: border-box;">消缺人</th>
+                <td colspan="2" id="detailedInfoStaff"></td>
+                <th style="padding-right: 8px;box-sizing: border-box;">计划完成时间</th>
+                <td colspan="2" id="detailedInfoPlanedTime"></td>
+                <th style="padding-right: 8px;box-sizing: border-box;">实际完成时间</th>
+                <td colspan="2" id="detailedInfoRealETime"></td>
+            </tr>
+            <tr>
+                <th style="padding-right: 8px;box-sizing: border-box;">缺陷描述</th>
+                <td colspan="9"><textarea readonly id='detailedInfoAbs' rows="5" cols="100" maxlength="100"></textarea></td>
+            </tr>
+            <tr>
+                <th style="padding-right: 8px;box-sizing: border-box;">处理措施</th>
+                <td colspan="9"><textarea readonly id='detailedInfoMethod' rows="5" cols="100" maxlength="100"></textarea></td>
+            </tr>
+            <tr>
+                <th style="padding-right: 8px;box-sizing: border-box;">遗留问题</th>
+                <td colspan="9"><textarea readonly id='detailedInfoProblem' rows="5" cols="100" maxlength="100"></textarea></td>
+            </tr>
+            <tr>
+                <th style="padding-right: 8px;box-sizing: border-box;">备注</th>
+                <td colspan="9"><textarea readonly id='detailedInfoRemark' rows="5" cols="100" maxlength="100"></textarea></td>
+            </tr>
+            <tr>
+                <th style="padding-right: 8px;box-sizing: border-box;">消缺前图片</th>
+                <td colspan="9" style="padding-left: 8px;box-sizing: border-box;">
+                    <img src="" id="detailedInfoBImg" class="seeImg" alt="无图片">
+                </td>
+            </tr>
+            <tr>
+                <th style="padding-right: 8px;box-sizing: border-box;">消缺后图片</th>
+                <td colspan="9" style="padding-left: 8px;box-sizing: border-box;">
+                    <img src="" id="detailedInfoAImg" class="seeImg" alt="无图片">
+                </td>
+            </tr>
+            </tbody>
+            <thead>
+            <tr>
+                <td colspan="10" align="center">
+                    <button type="button" class="layui-btn" onclick="cancel()">取消</button>
+                </td>
+            </tr>
+            </thead>
+        </table>
+    </div>
+    <!-- 认领 -->
+    <div class="claimInfoDiv">
+        <p id="claimInfoP" style="display: none;"></p>
+        <table>
+            <thead>
+                <tr>
+                    <td colspan="10" style="text-align: center;font-weight: bold;font-size: 18px;">
+                        认领缺陷 <input type="hidden" id="claimId">
+                    </td>
+                </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <th>缺陷编号</th>
+                <td>
+                    <span id="claimInfoId" style="padding: 0 5px;box-sizing: border-box;"></span>
+                </td>
+                <th>所属系统</th>
+                <td>
+                    <span id="claimInfoSys" style="padding: 0 5px;box-sizing: border-box;"></span>
+                </td>
+                <th>级别</th>
+                <td>
+                    <span id="claimInfoLevel" style="padding: 0 5px;box-sizing: border-box;"></span>
+                </td>
+            </tr>
+            <tr>
+                <th>创建人</th>
+                <td>
+                    <span id="claimInfoCreateName" style="padding: 0 5px;box-sizing: border-box;"></span>
+                </td>
+                <th>创建时间</th>
+                <td colspan="3">
+                    <span id="claimInfoCreateTime" style="padding: 0 5px;box-sizing: border-box;"></span>
+                </td>
+            </tr>
+            <tr>
+                <th>缺陷描述</th>
+                <td colspan="5" style="padding-left: 8px;box-sizing: border-box;"><textarea id='claimInfoAbs' rows="5" cols="75" maxlength="100"></textarea></td>
+            </tr>
+            <tr>
+                <th>认领人</th>
+                <td colspan="5" style="padding-left: 8px;box-sizing: border-box;">
+                    <div class="layui-input-inline" style="width: 553px;">
+                        <select name="tags" id="tags" lay-verify="required" xm-select="tags">
+                        </select>
+                    </div>
+                    <input type="hidden" id="claimInfoDescribeId">
+                </td>
+            </tr>
+            <tr>
+                <th>计划完成时间</th>
+                <td colspan="5" style="padding-left: 8px;box-sizing: border-box;">
+                    <div class="layui-inline">
+                        <div class="layui-input-inline" style="width: 275px;">
+                            <input type="text" class="layui-input" name="entryDate" id="test1" readonly="" placeholder="年月日">
+                        </div>
+                        <div class="layui-input-inline" style="width: 275px;">
+                            <input type="text" class="layui-input" name="entryDate" id="test2" readonly="" placeholder="小时">
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <th>消缺前图片</th>
+                <td colspan="5" id='tdImg' style="padding-left: 8px;box-sizing: border-box;">
+                    <img src="" id="claimInfoImg" class="seeImg" alt="无图片">
+                </td>
+            </tr>
+            </tbody>
+            <thead>
+            <tr>
+                <td colspan="10" align="center">
+                    <button type="button" class="layui-btn layui-btn-normal"  onclick="claimOk()">确定</button>
+                    <button type="button" class="layui-btn" onclick="cancel()">取消</button>
+                </td>
+            </tr>
+            </thead>
+        </table>
+    </div>
+    <!-- 消缺反馈 -->
+    <div class="handleInfoDiv">
+        <p id="handleInfoP" style="display: none;"></p>
+        <table>
+            <thead>
+            <tr><td colspan="5" style="text-align: center;font-weight: bold;font-size: 18px;">处理反馈单
+                <input id='feedbackId' type="hidden"/>
+                <input id='feedbackType' type="hidden"/>
+                <input id='feedbackCompleterId' type="hidden"/>
+                <input id='feedbackRealSTime' type="hidden"/>
+            </td></tr>
+            </thead>
+            <tbody>
+            <tr>
+                <th >重大级别</th>
+                <td ><span id='feedbackLevel'></span></td>
+                <th >检修类别</th>
+                <td ><span id='feedbackDepartment'></span></td>
+                <td><span id='feedbackTime'></span></td>
+            </tr>
+            <tr>
+                <th>缺陷位置</th>
+                <td colspan="4">
+                    <span id='feedbackSys'></span>
+                    <span id='feedbackEquipment'></span>
+                </td>
+            </tr>
+            <tr>
+                <th>缺陷描述</th>
+                <td colspan="4">
+                    <textarea id="feedbackAbs" rows="5" cols="50" maxlength="100"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <th>缺陷情况</th>
+                <td colspan="4">
+                    <textarea id='feedbackSituation' rows="5" cols="50" maxlength="100"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <th>缺陷图片</th>
+                <td colspan="4">
+                    <img src="../img/Add.png" style="float: left;margin-top: 10px;"  id="addImg2">
+                    <input type="file" id='file2' name='file' style="display: none;" accept="image/gif,image/jpeg,image/jpg,image/png" onchange="fileChange(event,'file2','two')">
+                    <img src="" id="img-change2" class="img-change">
+                    <img src="../img/reduce.png" style="float: left;margin-top: 10px;margin-left: 10px;" id="reduceImgFeed" onclick="reduceImg('reduceImgFeed')">
+                </td>
+            </tr>
+            <tr>
+                <th>处理措施</th>
+                <td colspan="4">
+                    <textarea id='feedbackMethod' rows="5" cols="50" maxlength="100"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <th>遗留问题</th>
+                <td colspan="4">
+                    <textarea id='feedbackProblem' rows="5" cols="50" maxlength="100"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <th>备注</th>
+                <td colspan="4">
+                    <textarea id='feedbackRemark' rows="5" cols="50" maxlength="100"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <th>填写人员</th>
+                <td colspan="4" id='feedbackCompleterName'></td>
+            </tr>
+            </tbody>
+            <thead>
+            <tr>
+                <td colspan="5" style="text-align: center;">
+                    <button type="button" class="layui-btn layui-btn-warm"  onclick="startFeedback()" id="startFeedbackBtn">开始执行</button>
+                    <button type="button" class="layui-btn layui-btn-normal"  onclick="insertFeedback()" id="insertFeedbackBtn">确定</button>
+                    <button type="button" class="layui-btn" onclick="cancel()">取消</button>
+                </td>
+            </tr>
+            </thead>
+        </table>
+    </div>
+</div>
 </body>
 </html>
