@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.howei.mapper.UsersMapper" >
+    <resultMap id="userMap" type="com.howei.pojo.Users">
+        <result column="id" property="id"></result>
+        <result column="userName" property="userName"></result>
+        <result column="userNumber" property="userNumber"></result>
+        <result column="password" property="password"></result>
+        <result column="employeeId" property="employeeId"></result>
+        <result column="state" property="state"></result>
+        <result column="sex" property="sex"></result>
+        <result column="phone" property="phone"></result>
+        <result column="email" property="email"></result>
+        <result column="companyId" property="companyId"></result>
+        <result column="departmentId" property="departmentId"></result>
+        <result column="postId" property="postId"></result>
+        <result column="userNumber" property="userNumber"></result>
+        <result column="manager" property="manager"></result>
+        <result column="entryDate" property="entryDate"></result>
+        <result column="sexName" property="sexName"></result>
+        <result column="companyName" property="companyName"></result>
+        <result column="departName" property="departName"></result>
+        <result column="postName" property="postName"></result>
+        <result column="managerName" property="managerName"></result>
+        <result column="stateName" property="stateName"></result>
+        <collection property="roles" resultMap="roleMap"></collection>
+    </resultMap>
+
+    <resultMap id="roleMap" type="com.howei.pojo.Role">
+        <result column="rid" property="id" />
+        <result column="roleName" property="roleName" />
+        <result column="description" property="description" />
+        <result column="englishName" property="englishName" />
+    </resultMap>
+
+    <select id="findUser" resultType="com.howei.pojo.Users" parameterType="java.lang.String" resultMap="userMap">
+        select * from users where userNumber=#{param1} and password=#{param2}
+    </select>
+
+    <select id="loginUserNumber" resultType="com.howei.pojo.Users" parameterType="java.lang.String">
+        select * from users
+        <where>
+            <if test="userNumber!=null">
+                and userNumber=#{userNumber}
+            </if>
+            <if test="password!=null">
+                and password=#{password}
+            </if>
+        </where>
+    </select>
+
+    <select id="findById" resultMap="userMap" resultType="com.howei.pojo.Users" parameterType="java.lang.String">
+        select * from users where id=#{id}
+    </select>
+
+    <select id="getUserList" parameterType="java.util.HashMap" resultMap="userMap">
+        select u.id,u.userNumber,u.userName,IF(u.sex=1,'男','女') as sexName,c.`name` as companyName,c1.`name` as departName,p.`name` as postName,u1.userName as managerName,IF(u.state=0,'离职','在职') as stateName,
+        u.entryDate,u.phone,u.email,u.companyId,u.departmentId,u.postId,u.manager,r.id,r.roleName,r.description,r.englishName
+        from users u
+        LEFT JOIN users u1 on u1.id=u.manager
+        LEFT JOIN company c on c.id=u.companyId
+        LEFT JOIN company c1 on c1.id=u.departmentId
+        LEFT JOIN post p on p.id=u.postId
+        LEFT JOIN user_role ur on ur.userId=u.id
+        LEFT JOIN role r on r.id=ur.roleId
+        where 1=1
+        <if test="companyId!=null and companyId!=''">
+            and c.id=#{companyId}
+        </if>
+        <if test="page!=null">
+            limit ${page},${pageSize}
+        </if>
+    </select>
+
+    <select id="getUserById" parameterType="java.lang.String" resultType="com.howei.pojo.Users">
+        select * from users where id=#{id}
+    </select>
+
+    <select id="getUserByParam" parameterType="com.howei.pojo.Users" resultType="com.howei.pojo.Users">
+        select * from users where 1=1
+        <if test="id!=null and id!=''">
+            and id=#{id}
+        </if>
+        <if test="userName!=null and userName!=''">
+            and userName=#{userName}
+        </if>
+        <if test="state!=null and state!=''">
+            and state=#{state}
+        </if>
+        <if test="phone!=null and phone!=''">
+            and phone=#{phone}
+        </if>
+        <if test="companyId!=null and companyId!=''">
+            and companyId=#{companyId}
+        </if>
+        <if test="departmentId!=null and departmentId!=''">
+            and departmentId=#{departmentId}
+        </if>
+        <if test="postId!=null and postId!=''">
+            and postId=#{postId}
+        </if>
+        <if test="userNumber!=null and userNumber!=''">
+            and userNumber=#{userNumber}
+        </if>
+    </select>
+
+    <insert id="addUser" parameterType="com.howei.pojo.Users" useGeneratedKeys="true" keyProperty="id">
+        insert into users(userName,password,state,sex,phone,email,companyId,departmentId,postId,userNumber,entryDate,employeeId) value (#{userName},#{password},#{state},#{sex},#{phone},#{email},#{companyId},#{departmentId},#{postId},#{userNumber},#{entryDate},#{employeeId})
+    </insert>
+
+    <update id="updateUser" parameterType="com.howei.pojo.Users" useGeneratedKeys="true" keyProperty="id">
+        update users
+        <trim prefix="set" suffixOverrides=",">
+            <if test="userName!=null and userName!=''">
+                userName=#{userName},
+            </if>
+            <if test="state!=null">
+                state=#{state},
+            </if>
+            <if test="phone!=null and phone!=''">
+                phone=#{phone},
+            </if>
+            <if test="companyId!=null and companyId!=''">
+                companyId=#{companyId},
+            </if>
+            <if test="departmentId!=null">
+                departmentId=#{departmentId},
+            </if>
+            <if test="postId!=null and postId!=''">
+                postId=#{postId},
+            </if>
+            <if test="userNumber!=null and userNumber!=''">
+                userNumber=#{userNumber},
+            </if>
+            <if test="password!=null and password!=''">
+                password=#{password},
+            </if>
+            <if test="email!=null and email!=''">
+                email=#{email},
+            </if>
+        </trim>
+        where id=#{id}
+    </update>
+
+    <select id="getUsersMap" resultType="com.howei.pojo.Users">
+        select id,userName from users
+    </select>
+
+    <select id="getUsersList" parameterType="java.util.HashMap" resultType="com.howei.pojo.Users">
+        select id,userName from users where state=1
+        <if test="companyId!=null">
+            and companyId=#{companyId}
+        </if>
+        <if test="departmentId!=null">
+            and departmentId=#{departmentId}
+        </if>
+    </select>
+
+    <select id="selSeen" parameterType="java.lang.String" resultType="java.util.HashMap" >
+        select distinct userId ,rdStatus from user_inform where informId=#{informId}
+    </select>
+
+    <select id="selSeenUser" parameterType="java.lang.String" resultType="java.lang.String" >
+        select userName from users where id=#{userId}
+    </select>
+
+    <select id="findUserByName" parameterType="java.lang.String" resultType="com.howei.pojo.Users">
+        select * from users where id=#{id}
+    </select>
+
+    <insert id="addEmployee" parameterType="com.howei.pojo.Employee" useGeneratedKeys="true" keyProperty="id">
+        insert into employee(name,userNumber,created,createdBy) values(#{name},#{userNumber},#{created},#{createdBy})
+    </insert>
+    <!--用户角色分配开始-->
+    <insert id="addUserRole" parameterType="com.howei.pojo.UserRole" useGeneratedKeys="true" keyProperty="id">
+        insert into user_role(userId,roleId,created,createdBy) value(#{userId},#{roleId},#{created},#{createdBy})
+    </insert>
+
+    <delete id="deleteUserRole" parameterType="int" >
+        delete from user_role where userId=#{userId}
+    </delete>
+
+    <select id="getUserRoles" parameterType="java.lang.String" resultType="com.howei.pojo.Role">
+        select r.id,r.roleName from user_role ur
+        left join role r on r.id=ur.roleId
+        where ur.userId=#{userId}
+    </select>
+    
+    <select id="getUserRoleList" resultMap="userMap" parameterType="java.util.HashMap">
+        select u.*,r.id,r.roleName,r.description,r.englishName from users u
+        left join user_role ur on ur.userId=u.id
+        left join role r on r.id=ur.roleId
+        where 1=1
+        <if test="userName!=null and userName!=''">
+            and u.userName=#{userName}
+        </if>
+        <if test="userId!=null">
+            and ur.userId=#{userId}
+        </if>
+    </select>
+
+    <select id="getUserRolesByName" resultMap="userMap" parameterType="java.lang.String">
+        select u.*,r.id rid,r.roleName,r.description,r.englishName from users u
+        left join user_role ur on ur.userId=u.id
+        left join role r on r.id=ur.roleId
+        where 1=1
+        <if test="userNumber!=null and userNumber!=''">
+            and u.userNumber=#{userNumber}
+        </if>
+    </select>
+    
+    <update id="updPassword" useGeneratedKeys="true" keyProperty="id">
+        update users set password=#{password} where id=#{userId}
+    </update>
+    
+    <select id="searchUsersList" parameterType="java.util.HashMap" resultMap="userMap">
+        select u.id,u.userNumber,u.userName,IF(u.sex=1,'男','女') as sexName,c.`name` as companyName,c1.`name` as departName,p.`name` as postName,u1.userName as managerName,IF(u.state=0,'离职','在职') as stateName,
+        u.entryDate,u.phone,u.email,u.companyId,u.departmentId,u.postId,u.manager,r.id,r.roleName,r.description,r.englishName
+        from users u
+        LEFT JOIN users u1 on u1.id=u.manager
+        LEFT JOIN company c on c.id=u.companyId
+        LEFT JOIN company c1 on c1.id=u.departmentId
+        LEFT JOIN post p on p.id=u.postId
+        LEFT JOIN user_role ur on ur.userId=u.id
+        LEFT JOIN role r on r.id=ur.roleId
+        where 1=1
+        <if test="companyId!=null and companyId!=''">
+            and c.id=#{companyId}
+        </if>
+        <if test="search!=null and search!=''">
+            and (
+              u.userName like concat('%',#{search},'%') OR
+              u.userNumber like concat('%',#{search},'%')
+            )
+        </if>
+        <if test="page!=null">
+            limit ${page},${pageSize}
+        </if>
+    </select>
+</mapper>

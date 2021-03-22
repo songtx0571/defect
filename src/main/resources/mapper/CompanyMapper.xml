@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.howei.mapper.CompanyMaper" >
+
+    <resultMap id="comMap" type="com.howei.pojo.Company">
+        <result column="id" property="id"></result>
+        <result column="name" property="name"></result>
+        <result column="created" property="created"></result>
+        <result column="createdBy" property="createdBy"></result>
+        <result column="isactive" property="isactive"></result>
+        <result column="parent" property="parent"></result>
+        <result column="codeName" property="codeName"></result>
+    </resultMap>
+
+    <select id="getCompanyList" resultType="com.howei.pojo.Company" parameterType="java.lang.String">
+      select * from company
+      <where>
+          <if test="parent!=null and parent!=''">
+              and parent=#{parent}
+          </if>
+          <if test="parent==''">
+              and parent!=0
+          </if>
+      </where>
+    </select>
+
+    <select id="getCompanyById" parameterType="java.lang.String" resultType="com.howei.pojo.Company">
+        select * from company where id=#{id}
+    </select>
+
+    <update id="updateCompany" parameterType="com.howei.pojo.Company" >
+        update company
+        <trim prefix="set" suffixOverrides=",">
+            <if test="name!=null and name!=''">
+                name=#{name},
+            </if>
+            <if test="codeName!=null and codeName!=''">
+                codeName=#{codeName},
+            </if>
+            <if test="isactive!=null">
+                isactive=#{isactive},
+            </if>
+            <if test="layIMState!=null">
+                layIMState=#{layIMState},
+            </if>
+        </trim>
+        where id=#{id}
+    </update>
+
+    <insert id="addCompany" parameterType="com.howei.pojo.Company" keyProperty="id" useGeneratedKeys="true">
+        insert into company(name,created,createdBy,isactive,parent,codeName,layIMState) value
+        (#{name},#{created},#{createdBy},#{isactive},#{parent},#{codeName},#{layIMState})
+    </insert>
+
+    <select id="getCodeNameList" parameterType="java.lang.String" resultType="com.howei.pojo.Company">
+        select distinct codeName,name from company where parent=#{parent}
+    </select>
+
+    <select id="getCompanyMap" parameterType="java.lang.String" resultType="java.util.HashMap">
+        select id,name from company where 1=1
+        <if test="parent!=null">
+            and parent=#{parent}
+        </if>
+        <if test="parent==null">
+            and parent!=0
+        </if>
+    </select>
+
+    <select id="getDepartmentList" parameterType="java.lang.String" resultType="com.howei.pojo.Company">
+        select id,name from company where parent=#{parent}
+    </select>
+
+    <select id="getCompany" parameterType="com.howei.pojo.Company" resultType="com.howei.pojo.Company">
+        select * from company where 1=1
+    </select>
+
+    <select id="getDepartmentMap" parameterType="java.lang.Integer" resultType="com.howei.pojo.Company">
+        select * from company where parent=#{parent}
+    </select>
+
+    <select id="getAllDepartmentList" resultType="com.howei.pojo.Company">
+        select * from company where parent!=0 and layIMState=1
+    </select>
+
+    <select id="getLayIMDepShowMap" parameterType="java.lang.String" resultType="com.howei.pojo.Company">
+        select * from company where parent=#{parent} and layIMState=1
+    </select>
+</mapper>

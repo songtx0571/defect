@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8"/>
+<link rel="shortcut icon" href="../img/favicon.ico" type="image/x-icon" />
+<script type="text/javascript"  src="../js/jquery-3.2.1.js"></script>
+<script type="text/javascript"  src="../js/defect/defect.js"></script>
+<script type="text/javascript"  src="../layer/layer.js"></script>
+<script type="text/javascript"  src="../layui/layui.js"></script>
+<script type="text/javascript"  src="../js/jQuery.print.min.js"></script>
+
+<script type="text/javascript"  src="../js/excel/tableExport.js"></script>
+<script type="text/javascript"  src="../js/excel/fileSaver.min.js"></script>
+<script type="text/javascript"  src="../js/excel/jquery.base64.js"></script>
+
+<link rel="stylesheet" href="../layui/css/layui.css" media="screen"/>
+<link rel="stylesheet" type="text/css" href="../DataTables-1.10.15/media/css/jquery.dataTables.css"/>
+<link rel="stylesheet" type="text/css" href="../Buttons-1.4.2/css/buttons.dataTables.min.css"/>
+<link rel="stylesheet" type="text/css" href="../Select-1.2.3/css/select.dataTables.min.css"/>
+<link rel="stylesheet" type="text/css" href="../bootstrap/css/bootstrap-theme.min.css"/>
+<link rel="stylesheet" type="text/css" href="../bootstrap/css/bootstrap.min.css"/>
+
+<!-- DataTables -->
+<script type="text/javascript" charset="utf8" src="../DataTables-1.10.15/media/js/jquery.dataTables.js"></script>
+<script type="text/javascript" charset="utf8" src="../Select-1.2.3/js/dataTables.select.js"></script>
+<script type="text/javascript" charset="utf8" src="../Select-1.2.3/js/dataTables.select.min.js"></script>
+<script type="text/javascript" charset="utf8" src="../Buttons-1.4.2/js/buttons.html5.min.js"></script>
+<script type="text/javascript" charset="utf8" src="../Buttons-1.4.2/js/buttons.print.min.js"></script>
+
+<link rel="stylesheet" href="../css/defect/defect.css" media="screen"/>
+<link rel="stylesheet" href="../css/print.css" media="print"/>
+<title>缺陷清单</title>
+
+</head>
+<body id='body'>
+	<div id='partsBanner' onclick="closeAddParts()"></div>
+	<div id='partsReordBanner' onclick="closePartsReord()"></div>
+	<div id='feedbackBanner'></div>
+	<div id='divSelect'>
+		炉号<select id="location" onchange="locationChange()"></select>
+		系统<select id='system' onchange='systemChange()'></select>
+	</div>
+	<div id="divTable">
+		<table class="display" id="DataTable" style="text-align: center;">
+			<thead>
+            	<tr>
+            		<th></th>
+               		<th>缺陷编号</th>
+                    <th>缺陷描述</th>
+                    <th>创建时间</th>
+                    <th>所属系统</th>
+                   	<th>重大级别</th>
+                    <th>创建人</th>
+                    <th>处理部门</th>
+                    <th>状态</th>
+                    <th>计划完成时间</th>
+                    <th>实际完成时间</th>
+                    <th>缺陷图片</th>
+                    <th>认领人</th>
+                    <th>消缺反馈</th>
+                    <th>值班确认</th>
+                    <th>甲方确认</th>
+                </tr>
+            </thead>
+        </table>
+	</div>
+	
+	<div id='Planedtime'>
+		<p id='PlanedtimeP'>请填写计划完成时间~</p>
+		<input type="text" class="layui-input" id="test1">
+		<p id='PlanedtimeP2'><button id='PlanedtimeInsert' onclick="changePlanedtime()">确定</button><button id='PlanedtimeBack' onclick='closePlanedtime()'>取消</button></p>
+	</div>
+	
+	<div id='changeStatus'>
+		<p id='changeStatusP1'>值班确认已完成本次消缺吗？</p>
+		<p id='changeStatusP2'><button id='PlanedtimeInsert' onclick="changeStatus()">确定</button><button id='PlanedtimeBack' onclick='closeChangeStatus()'>取消</button></p>
+	</div>
+	
+	<div id='defeated'>
+		<p id='defeatedP1'>缺陷已完成不可更改反馈单!</p>
+		<p id='defeatedP2'><button id='PlanedtimeInsert' onclick="closeDefeated()">确定</button></p>
+	</div>
+	
+	<div id='divImg'>
+		<img id='img'/>
+		<p id='defeatedP2'><button id='PlanedtimeInsert' onclick="closeDivImg()">确定</button></p>
+	</div>
+	
+	<div id='delDefect'>
+		<p id='delDefectP1'>确定删除该缺陷吗？</p>
+		<p id='delDefectP2'><button id='PlanedtimeInsert' onclick="delDefect1()">确定</button><button id='PlanedtimeBack' onclick='closeDelDefect()'>取消</button></p>
+	</div>
+	
+	<div id='addCheck'>
+		<p id='delDefectP1'>确定添加到检修记录吗？</p>
+		<p id='delDefectP2'><button id='PlanedtimeInsert' onclick="addCheck1()">确定</button><button id='PlanedtimeBack' onclick='closeAddCheck()'>取消</button></p>
+	</div>
+	
+	
+	<div id='feedback'>
+		<table id='feedbackTable'>
+			<thead>
+				<tr><th colspan="5">处理反馈单<input id='feedbackId' type="hidden"/><input id='feedbackType' type="hidden"/></th></tr>
+			</thead>
+			<tbody>
+				<tr>
+					<th >重大级别</th>
+					<td ><span id='feedbackLevel'>0类</span></td>
+					<th >检修部门</th>
+					<td ><span id='feedbackDepartment'>机务</span></td>
+					<td><span id='feedbackTime'>2019-03</span></td>
+				</tr>
+				<tr>
+					<th>缺陷位置</th>
+					<td colspan="4">
+						<span id='feedbacklocation1'>1#锅炉</span>
+						<span id='feedbacklocation2'>脱硫系统</span>
+						<span id='feedbacklocation3'>循环泵1A</span>
+						<span id='feedbacklocation4'>循环泵1A</span>
+					</td>
+				</tr>
+				<tr>
+					<th>缺陷反馈</th>
+					<td colspan="4">
+						<textarea id=feedbackAbs rows="5" cols="50" maxlength="100"></textarea>
+					</td>
+				</tr>
+				<tr>
+					<th>缺陷情况</th>
+					<td colspan="4">
+						<textarea id='situation' rows="5" cols="50" maxlength="100"></textarea>
+					</td>
+				</tr>
+				<tr>
+					<th>处理措施</th>
+					<td colspan="4">
+						<textarea id='method' rows="5" cols="50" maxlength="100" ></textarea>
+					</td>
+				</tr>
+				<tr>
+					<th>遗留问题</th>
+					<td colspan="4">
+						<textarea id='problem' rows="5" cols="50" maxlength="100" ></textarea>
+					</td>
+				</tr>
+				<tr>
+					<th>备注</th>
+					<td colspan="4">
+						<textarea id='remark' rows="5" cols="50" maxlength="100" ></textarea>
+					</td>
+				</tr>
+				<tr>
+					<th>填写人员</th>
+					<td colspan="4" id='completername'>管理员</td>
+				</tr>
+			</tbody>
+			<thead>
+				<tr>
+					<th colspan="5">
+						<button id='FeedbackAdd' onclick="insertFeedback()">确定</button>
+						<button id='addKnowledge' onclick="addKnowledge()">添加到知识库</button>
+						<button id='feedbackClose' onclick="closeFeedback()">取消</button>
+					</th>
+				</tr>
+			</thead>
+		</table>
+	</div>
+
+	<div id="partsDiv">
+		<button type="button" class="activeTab" onclick="changeDefectNum(0)">全部缺陷</button>&nbsp;&nbsp; 
+		<button type="button" class="activeTab" onclick="changeDefectNum(1)">未认领</button>&nbsp;&nbsp;
+        <button type="button" class="activeTab" onclick="changeDefectNum(2)">消缺中</button>&nbsp;&nbsp;
+		<button type="button" class="activeTab" onclick="changeDefectNum(3)">已完成</button>&nbsp;&nbsp;
+		<button type="button" class="activeTab DefectNum" onclick="changeDefectNum(4)">配件认领单</button>&nbsp;&nbsp;
+		
+		
+		<button type="button" class="partsExport" id="changeDefect" onclick="partsExport()">导出</button>
+		<button type="button" class="partsPrint" id="changeDefect" onclick="partsPrint()">打印</button>
+		<button type="button" class="partsEmail" id="changeDefect" onclick="partsEmail()">邮件</button>
+		<button type="button" class="partsRecord" id="changeDefect" onclick="partsRecord()">配件认领记录</button>
+		<button type="button" class="partsConfirm" id="changeDefect" onclick="partsConfirm()">确认认领</button>
+		<button type="button" class="partsAdd" id="changeDefect" onclick="partsAdd()">新增</button>
+		<table id="partsTable" >
+			<thead>
+            	<tr>
+            		<th width='8%'>配件编号</th>
+            		<th width='20%'>名称</th>
+            		<th width='30%'>规格</th>
+            		<th width='10%'>型号</th>
+            		<th width='10%'>生产厂家</th>
+            		<th width='15%'>认领数量</th>
+            		<th width='7%'>操作</th>
+            		<th id='ExportTr'>认领数量</th>
+                </tr>
+            </thead>
+            <tbody id='partsTbody'>
+            	
+            </tbody>
+        </table>
+	</div>
+	
+	
+	<div id='addParts'>
+		<table class="display" id="PartsTable" style="text-align: center;">
+			<thead>
+            	<tr>
+            		<th>配件编号</th>
+            		<th>名称</th>
+            		<th>规格</th>
+            		<th>型号</th>
+            		<th>生产厂家</th>
+            		<th>操作</th>
+            	</tr>
+			</thead>
+		</table>
+	</div>
+
+	<div id='recordParts'>
+		<table id='recordPartsTable'>
+			<thead id='recordPartsThead'>
+				<tr>
+					<th width="20%">单号</th>
+					<th width="25%">提交时间</th>
+					<th width="15%">提交人</th>
+					<th width="20%">总件数</th>
+					<th width="20%">备注</th>
+				</tr>
+			</thead>
+			<tbody id='recordPartsTbody'>
+				
+			</tbody>
+		</table>
+	</div>
+	
+	<div id='Email'>
+		<p id='PlanedtimeP'>请输入发送邮箱~</p>
+		<input type="text" id="emailNumber"/>
+		<p id='PlanedtimeP2'><button id='PlanedtimeInsert' onclick="sendEmail()">确定</button><button id='PlanedtimeBack' onclick='closeEmail()'>取消</button></p>
+	</div>
+	
+	<div id='error'>
+		<p id='errorP1'>不可以为空!</p>
+		<p id='errorP2'><button id='errorInsert' onclick="closeError()">确定</button></p>
+	</div>
+
+</body>
+</html>

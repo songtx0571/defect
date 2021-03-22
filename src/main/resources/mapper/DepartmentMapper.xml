@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.howei.mapper.DepartmentMapper" >
+
+    <resultMap id="depMap" type="com.howei.pojo.Department">
+        <result column="id" property="id"></result>
+        <result column="departmentName" property="departmentName"></result>
+        <result column="type" property="type"></result>
+    </resultMap>
+
+    <select id="getDepList" resultType="com.howei.pojo.Department" parameterType="java.lang.String">
+      select * from company where parent=#{parent}
+    </select>
+    <select id="getById" resultType="com.howei.pojo.Department">
+        select * from department where id=#{id}
+    </select>
+
+</mapper>

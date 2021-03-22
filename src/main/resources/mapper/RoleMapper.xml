@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.howei.mapper.RoleMapper" >
+
+    <resultMap id="roleMap" type="com.howei.pojo.Role">
+        <result column="id" property="id"></result>
+        <result column="roleName" property="roleName"></result>
+        <result column="englishName" property="englishName"></result>
+        <result column="description" property="description"></result>
+        <result column="departmentId" property="departmentId"></result>
+        <collection property="authoritys" resultMap="authorityMap"></collection>
+    </resultMap>
+
+    <resultMap id="authorityMap" type="com.howei.pojo.Authority">
+        <result column="authorityId" property="id"></result>
+        <result column="remark" property="remark"></result>
+        <result column="created" property="created"></result>
+        <result column="url" property="url"></result>
+        <result column="name" property="name"></result>
+        <result column="english" property="englishName"></result>
+        <result column="type" property="type"></result>
+        <result column="state" property="state"></result>
+    </resultMap>
+
+    <resultMap id="layuiTreeMap" type="com.howei.util.LayuiTree">
+        <result column="id" property="id"></result>
+        <result column="title" property="title"></result>
+        <result column="pid" property="pid"></result>
+    </resultMap>
+    
+    <select id="selectRole"  resultType="com.howei.pojo.Role">
+		select r.id,r.roleName,r.englishName,r.description,r.departmentId,c.name as departmentName from role r
+		left join company c on c.id=r.departmentId
+	</select>
+
+    <select id="getRoleById"  parameterType="java.lang.String" resultType="com.howei.pojo.Role">
+		select * from role where id = #{id}
+	</select>
+
+    <update id="updateRole" parameterType="com.howei.pojo.Role">
+		update role
+		<trim prefix="set" suffixOverrides=",">
+            <if test="roleName!=null and roleName!=''">
+                roleName = #{roleName},
+            </if>
+            <if test="description!=null and description!=''">
+                description=#{description},
+            </if>
+        </trim>
+		where id=#{id}
+	</update>
+
+    <insert id="addRole"  parameterType="com.howei.pojo.Role">
+		insert ignore into role(roleName,description,englishName,departmentId) value (#{roleName},#{description},#{englishName},#{departmentId})
+	</insert>
+
+    <delete id="deleteRole"  parameterType="java.lang.String">
+		delete from role where id = #{roleId}
+	</delete>
+
+    <select id="getRolesMap" resultType="com.howei.pojo.Role">
+        select * from role
+    </select>
+
+    <select id="getRoleAuthorityList" parameterType="java.util.HashMap" resultMap="roleMap">
+        select r.*,a.id as authorityId,a.url,a.name,a.remark from role r
+        left join role_authority ra on ra.roleId=r.id
+        left join authority a on a.id=ra.authorityId
+    </select>
+
+    <select id="getAuthorityMap" resultType="com.howei.pojo.Authority" parameterType="java.util.HashMap">
+        select * from authority
+        <if test="id!=null">
+            where id=#{id}
+        </if>
+    </select>
+
+    <select id="getRoleAuthoritys" parameterType="java.lang.String" resultType="com.howei.pojo.Authority">
+        select a.id,a.name,a.remark from role_authority ra
+        left join authority a on a.id=ra.authorityId
+        where ra.roleId=#{roleId}
+    </select>
+
+    <delete id="delRoleAuthoritys" parameterType="java.lang.String">
+        delete from role_authority where roleId=#{roleId}
+    </delete>
+
+    <insert id="addRoleAuthority" parameterType="com.howei.pojo.Authority" keyProperty="id" useGeneratedKeys="true">
+        insert into role_authority(roleId,authorityId,created,createdBy) value(#{roleId},#{authorityId},#{created},#{createdBy})
+    </insert>
+
+    <select id="getURLList" resultMap="layuiTreeMap" parameterType="java.lang.String">
+        select a.id,a.`name` as title,a.parentId as parentId from authority a
+    </select>
+
+    <select id="getAuthIdByRoleId" resultType="com.howei.pojo.Authority" parameterType="java.lang.String">
+        select a.id from role r
+        join role_authority ra on ra.roleId=r.id
+        join authority a on a.id=ra.authorityId
+        where r.id=#{roleId}
+    </select>
+</mapper>

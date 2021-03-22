@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.howei.mapper.AuthorityMapper" >
+
+    <resultMap id="authMap" type="com.howei.pojo.Permission">
+        <result column="id" property="id"></result>
+        <result column="parentId" property="parentId"></result>
+        <result column="permissionName" property="permissionName"></result>
+        <result column="type" property="type"></result>
+        <result column="roleId" property="roleId"></result>
+        <result column="projectId" property="projectId"></result>
+    </resultMap>
+
+    <resultMap id="rpMap" type="com.howei.pojo.RolePermission">
+        <result column="id" property="id"></result>
+        <result column="roleId" property="roleId"></result>
+        <result column="permissionId" property="permissionId"></result>
+        <result column="type" property="type"></result>
+    </resultMap>
+
+    <resultMap id="authorityMap" type="com.howei.pojo.Authority">
+        <result column="id" property="id"></result>
+        <result column="remark" property="remark"></result>
+        <result column="created" property="created"></result>
+        <result column="url" property="url"></result>
+        <result column="name" property="name"></result>
+        <result column="parentId" property="parentId"></result>
+    </resultMap>
+
+    <insert id="addAistributeURL" parameterType="com.howei.pojo.Authority" keyProperty="id" useGeneratedKeys="true">
+        insert into authority(remark,created,url,`name`,parentId) value (#{remark},#{created},#{url},#{name},#{parentId})
+    </insert>
+
+    <update id="updAistributeURL" parameterType="com.howei.pojo.Authority" keyProperty="id" useGeneratedKeys="true">
+        update authority
+        <trim prefix="set" suffixOverrides=",">
+            <if test="name!=null and name!=''">
+                `name`=#{name},
+            </if>
+            <if test="url!=null and url!=''">
+                url=#{url},
+            </if>
+            <if test="remark!=null and remark!=''">
+                remark=#{remark},
+            </if>
+        </trim>
+        where id=#{id}
+    </update>
+
+    <select id="getUrlById" parameterType="java.lang.String" resultMap="authorityMap">
+        select * from authority where id=#{id}
+    </select>
+
+    <select id="getURLList" parameterType="java.util.HashMap" resultType="com.howei.pojo.Authority">
+        select * from authority
+    </select>
+
+    <!--<select id="getPermissionByparentId" parameterType="java.lang.String" resultType="com.howei.pojo.Permission">
+		select * from permission where parentId = #{parentId}
+	</select>
+
+    <select id="getRolePermissionByRoleId" resultType="com.howei.pojo.RolePermission">
+		SELECT a.id,roleId,permissionId,a.type,b.parentId parentId2,IFNULL(c.parentId,0) parentId1 FROM rolePermission a
+		LEFT JOIN permission b ON a.permissionId = b.id
+		LEFT JOIN permission c ON b.parentId = c.id
+		WHERE roleId = #{roleId}
+	</select>
+
+    <update id="changRolePermissionTypeByRoleId" parameterType="java.lang.String">
+		UPDATE rolePermission SET TYPE = 0 WHERE roleId = #{roleId}
+	</update>
+
+    <select id='getCountRolePermission' resultType="java.lang.Integer">
+		SELECT COUNT(*) FROM rolePermission WHERE roleId = #{roleId} AND permissionId = #{permissionId}
+	</select>
+
+    <insert id="addRolePermission">
+		INSERT ignore INTO rolePermission(roleId,permissionId,`type`) VALUE(#{roleId},#{permissionId},1)
+	</insert>
+
+    <update id="changRolePermissionTypeByPermissionId">
+		UPDATE rolePermission SET TYPE = 1 WHERE roleId = #{roleId} AND permissionId = #{permissionId}
+	</update>-->
+
+</mapper>
