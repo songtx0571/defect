@@ -17,12 +17,11 @@ public class Image {
             data = new byte[in.available()];
             in.read(data);
             in.close();
+            // 对字节数组Base64编码
+            BASE64Encoder encoder = new BASE64Encoder();
+            return encoder.encode(data);// 返回Base64编码过的字节数组字符串
         } catch (IOException e) {
-            e.printStackTrace();
+            return "";
         }
-        // 对字节数组Base64编码
-        BASE64Encoder encoder = new BASE64Encoder();
-
-        return encoder.encode(data);// 返回Base64编码过的字节数组字符串
     }
 }

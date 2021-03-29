@@ -15,4 +15,6 @@ public interface DefectService {
     int updDefect(Defect defect);
 
     Defect getDefectById(Integer id);
+
+    int getDefectCountByDep(int departmentId);
 }

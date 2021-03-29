@@ -1,10 +1,7 @@
 package com.howei.mapper;
 
-import com.howei.pojo.Authority;
 import com.howei.pojo.Defect;
-import com.howei.pojo.Permission;
-import com.howei.pojo.RolePermission;
-import org.apache.ibatis.annotations.Param;
+
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -21,4 +18,6 @@ public interface DefectMapper {
     int updDefect(Defect defect);
 
     Defect getDefectById(Integer id);
+
+    int getDefectCountByDep(int departmentId);
 }

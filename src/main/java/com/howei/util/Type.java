@@ -8,5 +8,7 @@ public enum Type {
     HAVE,//存在同名
     NOUSER,//用户验证信息过期
     FORMAT,//格式错误
-    REJECT;//驳回：记录已经被修改
+    REJECT,//驳回：记录已经被修改
+    NOPERMISSION,//无权限
+    NoDepNumber;//部门无编号
 }

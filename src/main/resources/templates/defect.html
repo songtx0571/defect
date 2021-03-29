@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
 <head>
     <meta charset="UTF-8">
     <meta name="referrer" content="origin">
@@ -40,7 +40,9 @@
                 </div>
             </form>
             <!--<input placeholder="模糊搜索" type="text" style="float: left;width: 250px;height: 36px;padding-left:10px;border: 1px solid #e6e6e6;margin-right: 20px;" id="keyword">-->
+            <shiro:hasPermission name="缺陷运行岗位">
             <button type="button" class="layui-btn layui-btn-normal floatBtn" onclick="addDefect()">新增&nbsp;&nbsp;+</button>
+            </shiro:hasPermission>
         </div>
     </div>
     <!-- 表格内容 -->
@@ -48,24 +50,26 @@
         <table id="demo" lay-filter="test"></table>
         <script type="text/html" id="tbMajorBar">
             {{#  if(d.level == 0){ }}
-            <span>0类</span>
+            <span style="color: red;">0类</span>
             {{#  } else if(d.level == 1) { }}
-            <span>1类</span>
+            <span style="color: orange;">1类</span>
             {{#  } else if(d.level == 2) { }}
-            <span>2类</span>
+            <span style="color: mediumpurple;">2类</span>
             {{#  } else if(d.level == 3) { }}
-            <span>3类</span>
+            <span style="color: #007DDB;">3类</span>
             {{#  } else if(d.level == 4) { }}
-            <span>4类</span>
+            <span style="color: green;">4类</span>
             {{#  } }}
         </script>
         <script type="text/html" id="tbTypeBar">
             {{#  if(d.type == 1){ }}
             <span style="color: red;">未认领</span>
+            {#  } else if(d.type == 5) { }}
+            <span style="color: #f6ff29;">已认领</span>
             {{#  } else if(d.type == 2) { }}
             <span style="color: #ff8100;">消缺中</span>
             {{#  } else if(d.type == 3) { }}
-            <span style="color: green;">已消缺</span>
+            <span style="color: #8fc323;">已消缺</span>
             {{#  } else if(d.type == 4) { }}
             <span style="color: green;">已完成</span>
             {{#  } }}
@@ -74,21 +78,42 @@
             {{#  if(d.type == 4){ }}
             <span style="color: green;">已确认</span>
             {{#  } else { }}
+            <shiro:hasPermission name="缺陷运行岗位">
             <a class="layui-btn layui-btn-xs" lay-event="beOnDuty">值班确认</a>
+            </shiro:hasPermission>
             {{#  } }}
         </script>
         <script type="text/html" id="tbClaimBar">
             {{#  if(d.empIds == null){ }}
+            <shiro:hasPermission name="缺陷检修班长">
             <a class="layui-btn layui-btn-xs" lay-event="claim">认领</a>
+            </shiro:hasPermission>
             {{#  } else { }}
             <span style="color: green;">{{d.claimantName}}</span>
             {{#  } }}
         </script>
+        <script type="text/html" id="tbImplementBar">
+            {{#  if(d.type == 1){ }}
+            <a class="layui-btn layui-btn-xs" lay-event="implement">开始执行</a>
+            {{#  } else if(d.type == 5) { }}
+            <a class="layui-btn layui-btn-xs" lay-event="implement">开始执行</a>
+            {{#  } else { }}
+            <span style="color: green;">消缺中</span>
+            {{#  } }}
+        </script>
         <script type="text/html" id="tbHandleBar">
             {{#  if(d.type == 1){ }}
+            <shiro:hasPermission name="缺陷检修岗位">
             <a class="layui-btn layui-btn-xs" lay-event="handle">消缺反馈</a>
+            </shiro:hasPermission>
+            {{#  } else if(d.type == 5) { }}
+            <shiro:hasPermission name="缺陷检修岗位">
+                <a class="layui-btn layui-btn-xs" lay-event="handle">消缺反馈</a>
+            </shiro:hasPermission>
             {{#  } else if(d.type == 2) { }}
+            <shiro:hasPermission name="缺陷检修岗位">
             <a class="layui-btn layui-btn-xs" lay-event="handle">消缺反馈</a>
+            </shiro:hasPermission>
             {{#  } else if(d.type == 3) { }}
             <span style="color: green;">已消缺</span>
             {{#  } else if(d.type == 4) { }}
@@ -224,30 +249,30 @@
             </tr>
             <tr>
                 <th style="padding-right: 8px;box-sizing: border-box;">缺陷描述</th>
-                <td colspan="9"><textarea readonly id='detailedInfoAbs' rows="5" cols="100" maxlength="100"></textarea></td>
+                <td colspan="9"><textarea readonly id='detailedInfoAbs' rows="5" cols="80" maxlength="80"></textarea></td>
             </tr>
             <tr>
                 <th style="padding-right: 8px;box-sizing: border-box;">处理措施</th>
-                <td colspan="9"><textarea readonly id='detailedInfoMethod' rows="5" cols="100" maxlength="100"></textarea></td>
+                <td colspan="9"><textarea readonly id='detailedInfoMethod' rows="5" cols="80" maxlength="80"></textarea></td>
             </tr>
             <tr>
                 <th style="padding-right: 8px;box-sizing: border-box;">遗留问题</th>
-                <td colspan="9"><textarea readonly id='detailedInfoProblem' rows="5" cols="100" maxlength="100"></textarea></td>
+                <td colspan="9"><textarea readonly id='detailedInfoProblem' rows="5" cols="80" maxlength="80"></textarea></td>
             </tr>
             <tr>
                 <th style="padding-right: 8px;box-sizing: border-box;">备注</th>
-                <td colspan="9"><textarea readonly id='detailedInfoRemark' rows="5" cols="100" maxlength="100"></textarea></td>
+                <td colspan="9"><textarea readonly id='detailedInfoRemark' rows="5" cols="80" maxlength="80"></textarea></td>
             </tr>
             <tr>
                 <th style="padding-right: 8px;box-sizing: border-box;">消缺前图片</th>
-                <td colspan="9" style="padding-left: 8px;box-sizing: border-box;">
-                    <img src="" id="detailedInfoBImg" class="seeImg" alt="无图片">
+                <td colspan="9" style="padding: 8px;box-sizing: border-box;">
+                    <img src="" id="detailedInfoBImg" class="img-change" alt="无图片">
                 </td>
             </tr>
             <tr>
                 <th style="padding-right: 8px;box-sizing: border-box;">消缺后图片</th>
                 <td colspan="9" style="padding-left: 8px;box-sizing: border-box;">
-                    <img src="" id="detailedInfoAImg" class="seeImg" alt="无图片">
+                    <img src="" id="detailedInfoAImg" class="img-change" alt="无图片">
                 </td>
             </tr>
             </tbody>
@@ -302,6 +327,10 @@
             </tr>
             <tr>
                 <th>认领人</th>
+                <td id="claimantName"></td>
+            </tr>
+            <tr>
+                <th>执行人</th>
                 <td colspan="5" style="padding-left: 8px;box-sizing: border-box;">
                     <div class="layui-input-inline" style="width: 553px;">
                         <select name="tags" id="tags" lay-verify="required" xm-select="tags">
@@ -326,7 +355,7 @@
             <tr>
                 <th>消缺前图片</th>
                 <td colspan="5" id='tdImg' style="padding-left: 8px;box-sizing: border-box;">
-                    <img src="" id="claimInfoImg" class="seeImg" alt="无图片">
+                    <img src="" id="claimInfoImg" class="img-change" alt="无图片">
                 </td>
             </tr>
             </tbody>
@@ -338,6 +367,53 @@
                 </td>
             </tr>
             </thead>
+        </table>
+    </div>
+    <!--开始执行-->
+    <div class="implementInfoDiv">
+        <p id="implementInfoP" style="display: none;"></p>
+        <table>
+            <thead>
+            <tr>
+                <td colspan="5" style="text-align: center;font-weight: bold;font-size: 18px;">执行任务
+                <input id='implementId' type="hidden"/>
+                <input id='implementType' type="hidden"/>
+                <input id='implementCompleterId' type="hidden"/>
+                <input id='implementRealSTime' type="hidden"/>
+                </td>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <th >重大级别</th>
+                <td ><span id='implementLevel'></span></td>
+                <th >检修类别</th>
+                <td ><span id='implementDepartment'></span></td>
+            </tr>
+            <tr>
+                <th>缺陷位置</th>
+                <td colspan="3">
+                    <span id='implementSys'></span>
+                    <span id='implementEquipment'></span>
+                </td>
+            </tr>
+            <tr>
+                <th>缺陷描述</th>
+                <td colspan="3" id="implementAbs"></td>
+            </tr>
+            <tr>
+                <th>缺陷前图片</th>
+                <td colspan="3" style="padding: 8px;box-sizing: border-box;">
+                    <img src="" id="implementImg" class="img-change" alt="无图片">
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4" style="text-align: center;">
+                    <button type="button" class="layui-btn layui-btn-normal"  onclick="startFeedback()" id="startFeedbackBtn">开始执行</button>
+                    <button type="button" class="layui-btn" onclick="cancel()">取消</button>
+                </td>
+            </tr>
+            </tbody>
         </table>
     </div>
     <!-- 消缺反馈 -->
@@ -354,26 +430,6 @@
             </thead>
             <tbody>
             <tr>
-                <th >重大级别</th>
-                <td ><span id='feedbackLevel'></span></td>
-                <th >检修类别</th>
-                <td ><span id='feedbackDepartment'></span></td>
-                <td><span id='feedbackTime'></span></td>
-            </tr>
-            <tr>
-                <th>缺陷位置</th>
-                <td colspan="4">
-                    <span id='feedbackSys'></span>
-                    <span id='feedbackEquipment'></span>
-                </td>
-            </tr>
-            <tr>
-                <th>缺陷描述</th>
-                <td colspan="4">
-                    <textarea id="feedbackAbs" rows="5" cols="50" maxlength="100"></textarea>
-                </td>
-            </tr>
-            <tr>
                 <th>缺陷情况</th>
                 <td colspan="4">
                     <textarea id='feedbackSituation' rows="5" cols="50" maxlength="100"></textarea>
@@ -381,7 +437,7 @@
             </tr>
             <tr>
                 <th>缺陷图片</th>
-                <td colspan="4">
+                <td colspan="4" style="padding: 8px;box-sizing: border-box;">
                     <img src="../img/Add.png" style="float: left;margin-top: 10px;"  id="addImg2">
                     <input type="file" id='file2' name='file' style="display: none;" accept="image/gif,image/jpeg,image/jpg,image/png" onchange="fileChange(event,'file2','two')">
                     <img src="" id="img-change2" class="img-change">
@@ -414,7 +470,7 @@
             <thead>
             <tr>
                 <td colspan="5" style="text-align: center;">
-                    <button type="button" class="layui-btn layui-btn-warm"  onclick="startFeedback()" id="startFeedbackBtn">开始执行</button>
+                    <!--<button type="button" class="layui-btn layui-btn-warm"  onclick="startFeedback()" id="startFeedbackBtn">开始执行</button>-->
                     <button type="button" class="layui-btn layui-btn-normal"  onclick="insertFeedback()" id="insertFeedbackBtn">确定</button>
                     <button type="button" class="layui-btn" onclick="cancel()">取消</button>
                 </td>

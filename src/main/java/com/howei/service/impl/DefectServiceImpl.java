@@ -39,4 +39,9 @@ public class DefectServiceImpl implements DefectService {
     public Defect getDefectById(Integer id) {
         return defectMapper.getDefectById(id);
     }
+
+    @Override
+    public int getDefectCountByDep(int departmentId) {
+        return defectMapper.getDefectCountByDep(departmentId);
+    }
 }

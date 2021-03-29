@@ -3,12 +3,18 @@
 <mapper namespace="com.howei.mapper.EmployeeMapper" >
 
     <select id="getEmpMap" resultType="com.howei.pojo.Employee" parameterType="java.util.HashMap">
-        select e.* from employee e
+        select e.id,e.`name` from employee e
         left join users u on u.employeeId=e.id
+        left join user_role ur on ur.userId=u.id
+        LEFT JOIN role_authority ra on ra.roleId=ur.roleId
         <where>
             <if test="departmentId!=null">
                 and u.departmentId=#{departmentId}
             </if>
+            <if test="state!=null">
+                and u.state=#{state}
+            </if>
+            and ra.authorityId=162
         </where>
     </select>
 

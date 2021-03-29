@@ -22,6 +22,12 @@
             <if test="equipmentId!=null">
                 and de.equipmentId=#{equipmentId}
             </if>
+            <if test="departmentId!=null">
+                and de.departmentId=#{departmentId}
+            </if>
+            <if test="employeeId!=null">
+                and (de.createdBy=#{employeeId} or de.claimant=#{employeeId} or de.confirmer1=#{employeeId} or locate(#{employeeId},de.empIds))
+            </if>
         </where>
         order by de.created desc
         <if test="page!=null">
@@ -97,6 +103,10 @@
 
     <select id="getDefectById" parameterType="int" resultType="com.howei.pojo.Defect">
         select * from defect where id=#{id}
+    </select>
+
+    <select id="getDefectCountByDep" parameterType="int" resultType="int">
+        select count(*) from defect where departmentId=#{departmentId}
     </select>
 
 </mapper>
