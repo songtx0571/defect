@@ -16,6 +16,9 @@
             <if test="type!=null">
                 and de.type=#{type}
             </if>
+            <if test="type1!=null">
+                and de.type!=4
+            </if>
             <if test="sysId!=null">
                 and de.sysId=#{sysId}
             </if>

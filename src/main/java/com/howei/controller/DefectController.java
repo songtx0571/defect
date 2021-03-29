@@ -10,6 +10,7 @@ import com.howei.service.EmployeeService;
 import com.howei.service.EquipmentService;
 import com.howei.util.*;
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +22,8 @@ import java.io.IOException;
 import java.util.*;
 
 import static com.howei.util.Image.ImageToBase64ByLocal;
+import static org.apache.shiro.authz.annotation.Logical.AND;
+import static org.apache.shiro.authz.annotation.Logical.OR;
 
 /**
  * 缺陷
@@ -95,6 +98,7 @@ public class DefectController {
         String type=request.getParameter("type");//缺陷状态
         String sysId=request.getParameter("sysId");//系统
         String equipmentId=request.getParameter("equipmentId");//设备
+        String departmentId=request.getParameter("departmentId");//部门
         String page=request.getParameter("page");
         String limit=request.getParameter("limit");
         int rows=Page.getOffSet(page,limit);
@@ -112,8 +116,13 @@ public class DefectController {
         Map map=new HashMap();
         if(type!=null&&!"".equals(type)){
             if(!type.equals("0")){//全部缺陷: 忽略状态
+                if(!subject.isPermitted("缺陷管理员")){
+                    map.put("departmentId",users.getDepartmentId());
+                }
                 map.put("type",type);
             }
+        }else{
+            map.put("type1",4);
         }
         if(sysId!=null&&!"".equals(sysId)){
             map.put("sysId",sysId);
@@ -125,6 +134,9 @@ public class DefectController {
             if(!subject.isPermitted("缺陷管理员")){
                 map.put("departmentId",users.getDepartmentId());
             }
+        }
+        if(departmentId!=null && !departmentId.equals("")){
+            map.put("departmentId",departmentId);
         }
 
         List<Defect> total=defectService.getDefectList(map);
@@ -179,7 +191,7 @@ public class DefectController {
     }
 
     /**
-     * 添加
+     * 添加缺陷单
      * @param defect
      * @return
      */
@@ -203,9 +215,18 @@ public class DefectController {
         }
 
         int result=defectService.addDefect(defect);
+        //设置缺陷单编号
         if(result>=0){
             int count=defectService.getDefectCountByDep(users.getDepartmentId());
-            defect.setNumber(company.getCodeName()+count);
+            if(count<10){
+                defect.setNumber(company.getCodeName()+"000"+count);
+            } else if(count>=10 && count<100){
+                defect.setNumber(company.getCodeName()+"00"+count);
+            } else if(count>=100 && count<10000){
+                defect.setNumber(company.getCodeName()+"0"+count);
+            } else {
+                defect.setNumber(company.getCodeName()+count);
+            }
             defectService.updDefect(defect);
             return JSON.toJSONString(Type.SUCCESS);
         }
@@ -390,6 +411,21 @@ public class DefectController {
         }
         souMap.put("state",1);
         List<Map<String,Object>> list=employeeService.getEmpMap(souMap);
+        return list;
+    }
+
+    /**
+     * 部门下拉框
+     * @return
+     */
+    @RequestMapping("/getDepMap")
+    @RequiresPermissions(value = {"缺陷管理员"},logical = AND)
+    public List<Map<String,String>> getDepMap(){
+        Subject subject=SecurityUtils.getSubject();
+        List<Map<String,String>> list=new ArrayList<>();
+        if(subject.isPermitted("缺陷管理员")){
+            list=companyService.getDepartmentList("1");
+        }
         return list;
     }
 
