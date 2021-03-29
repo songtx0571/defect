@@ -67,7 +67,7 @@
     </select>
 
     <select id="getDepartmentList" parameterType="java.lang.String" resultType="com.howei.pojo.Company">
-        select id,name from company where parent=#{parent}
+        select id,name from company where parent=#{parent} and isactive=1
     </select>
 
     <select id="getCompany" parameterType="com.howei.pojo.Company" resultType="com.howei.pojo.Company">

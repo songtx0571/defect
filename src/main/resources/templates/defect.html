@@ -20,6 +20,7 @@
         <div style="width: 100%;height: 50px;">
             <button type="button" class="layui-btn floatBtn" onclick="getChecked('0')">全部缺陷</button>
             <button type="button" class="layui-btn floatBtn" onclick="getChecked('1')">未认领</button>
+            <button type="button" class="layui-btn floatBtn" onclick="getChecked('5')">已认领</button>
             <button type="button" class="layui-btn floatBtn" onclick="getChecked('2')">消缺中</button>
             <button type="button" class="layui-btn floatBtn" onclick="getChecked('3')">已消缺</button>
             <button type="button" class="layui-btn floatBtn" onclick="getChecked('4')">已完成</button>
@@ -28,6 +29,7 @@
             <form class="layui-form" action="" style="float: left;margin-right: 20px;">
                 <input type="hidden" id="systemHidden">
                 <input type="hidden" id="equipmentHidden">
+                <input type="hidden" id="departmentHidden">
                 <div class="layui-inline">
                     <div class="layui-input-inline">
                         <select name="modules" lay-verify="required" lay-filter="system" lay-search="" id="system"></select>
@@ -38,34 +40,40 @@
                         <select name="modules" lay-verify="required" lay-filter="equipment" lay-search="" id="equipment"></select>
                     </div>
                 </div>
+                <shiro:hasPermission name="缺陷管理员">
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <select name="modules" lay-verify="required" lay-filter="department" lay-search="" id="department"></select>
+                    </div>
+                </div>
+                </shiro:hasPermission>
             </form>
-            <!--<input placeholder="模糊搜索" type="text" style="float: left;width: 250px;height: 36px;padding-left:10px;border: 1px solid #e6e6e6;margin-right: 20px;" id="keyword">-->
             <shiro:hasPermission name="缺陷运行岗位">
-            <button type="button" class="layui-btn layui-btn-normal floatBtn" onclick="addDefect()">新增&nbsp;&nbsp;+</button>
+            <button type="button" style="margin-right: 0px;" class="layui-btn layui-btn-normal floatBtn" onclick="addDefect()">新增&nbsp;&nbsp;+</button>
             </shiro:hasPermission>
         </div>
     </div>
     <!-- 表格内容 -->
     <div class="content">
         <table id="demo" lay-filter="test"></table>
-        <script type="text/html" id="tbMajorBar">
+        <script type="text/html" id="tbNumberBar">
             {{#  if(d.level == 0){ }}
-            <span style="color: red;">0类</span>
+            <span style="color: red;">{{d.number}}</span>
             {{#  } else if(d.level == 1) { }}
-            <span style="color: orange;">1类</span>
+            <span style="color: orange;">{{d.number}}</span>
             {{#  } else if(d.level == 2) { }}
-            <span style="color: mediumpurple;">2类</span>
+            <span style="color: mediumpurple;">{{d.number}}</span>
             {{#  } else if(d.level == 3) { }}
-            <span style="color: #007DDB;">3类</span>
+            <span style="color: #007DDB;">{{d.number}}</span>
             {{#  } else if(d.level == 4) { }}
-            <span style="color: green;">4类</span>
+            <span style="color: green;">{{d.number}}</span>
             {{#  } }}
         </script>
         <script type="text/html" id="tbTypeBar">
             {{#  if(d.type == 1){ }}
             <span style="color: red;">未认领</span>
-            {#  } else if(d.type == 5) { }}
-            <span style="color: #f6ff29;">已认领</span>
+            {{#  } else if(d.type == 5) { }}
+            <span style="color: #dcb422;">已认领</span>
             {{#  } else if(d.type == 2) { }}
             <span style="color: #ff8100;">消缺中</span>
             {{#  } else if(d.type == 3) { }}
@@ -288,6 +296,7 @@
     <!-- 认领 -->
     <div class="claimInfoDiv">
         <p id="claimInfoP" style="display: none;"></p>
+        <input type="hidden" id="claimMaintenanceCategory">
         <table>
             <thead>
                 <tr>
@@ -419,6 +428,10 @@
     <!-- 消缺反馈 -->
     <div class="handleInfoDiv">
         <p id="handleInfoP" style="display: none;"></p>
+        <input type="hidden" id="feedbackLevel">
+        <input type="hidden" id="feedbackSys">
+        <input type="hidden" id="feedbackEquipment">
+        <input type="hidden" id="feedbackDepartment">
         <table>
             <thead>
             <tr><td colspan="5" style="text-align: center;font-weight: bold;font-size: 18px;">处理反馈单
