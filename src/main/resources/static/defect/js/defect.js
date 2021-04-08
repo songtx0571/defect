@@ -158,7 +158,7 @@ function showTable(type,sysId,equipmentId,departmentId) {
             , limits: [50,100,150]
             , id: 'demoInfo'
             , cols: [[ //表头
-                , {fixed: 'left', title: '缺陷详情', toolbar: '#tbNumberBar', align: 'center', event: 'detailed', style:'cursor: pointer;',width: 80}
+                {fixed: '', title: '详情', toolbar: '#tbNumberBar', align: 'center', event: 'detailed', style:'cursor: pointer;', width: 80}
                 , {field: 'sysName', title: '所属系统', align: 'center',minWidth: 150}
                 , {field: 'equipmentName', title: '设备名称', align: 'center',minWidth: 150}
                 , {field: 'abs', title: '缺陷描述', align: 'center'}
