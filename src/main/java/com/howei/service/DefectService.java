@@ -17,4 +17,6 @@ public interface DefectService {
     Defect getDefectById(Integer id);
 
     int getDefectCountByDep(int departmentId);
+
+    List<Map<String,String>> getDefectHistiryByEqu(Map map);
 }

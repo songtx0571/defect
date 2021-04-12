@@ -49,7 +49,6 @@ public class OperationController {
         record.setRemark(remark);
         record.setLongTime(timeMillis.toString());
         record.setCreateTime(sdf.format(timeMillis));
-        System.out.println("Openation::" + record);
         try {
             sender.send(record);
             //webSocketOperation.sendMessageToAll(record.toString());

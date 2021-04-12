@@ -124,10 +124,10 @@ public class DefectController {
         }else{
             map.put("type1",4);
         }
-        if(sysId!=null&&!"".equals(sysId)){
+        if(sysId!=null && !"".equals(sysId) && !sysId.equals("-1")){
             map.put("sysId",sysId);
         }
-        if(equipmentId!=null&&!"".equals(equipmentId)){
+        if(equipmentId!=null&&!"".equals(equipmentId) && !equipmentId.equals("-1")){
             map.put("equipmentId",equipmentId);
         }
         if(users!=null){
@@ -135,7 +135,7 @@ public class DefectController {
                 map.put("departmentId",users.getDepartmentId());
             }
         }
-        if(departmentId!=null && !departmentId.equals("")){
+        if(departmentId!=null && !departmentId.equals("") && !departmentId.equals("-1")){
             map.put("departmentId",departmentId);
         }
 
@@ -180,9 +180,9 @@ public class DefectController {
     }
 
     @RequestMapping("/getPermission")
-    public String getPermission(){
+    public String getPermission(String permissionName){
         Subject subject=SecurityUtils.getSubject();
-        boolean bool=subject.isPermitted("缺陷运行岗位");
+        boolean bool=subject.isPermitted(permissionName);
         if(bool){
             return JSON.toJSONString("true");
         }else{
@@ -218,14 +218,18 @@ public class DefectController {
         //设置缺陷单编号
         if(result>=0){
             int count=defectService.getDefectCountByDep(users.getDepartmentId());
-            if(count<10){
-                defect.setNumber(company.getCodeName()+"000"+count);
-            } else if(count>=10 && count<100){
-                defect.setNumber(company.getCodeName()+"00"+count);
-            } else if(count>=100 && count<10000){
-                defect.setNumber(company.getCodeName()+"0"+count);
+            int insId=count;
+            if(company.getId()==19){//浦江项目部从819开始
+                insId=819+count;
+            }
+            if(insId<10){
+                defect.setNumber(company.getCodeName()+"000"+insId);
+            } else if(insId>=10 && insId<100){
+                defect.setNumber(company.getCodeName()+"00"+insId);
+            } else if(insId>=100 && insId<10000){
+                defect.setNumber(company.getCodeName()+"0"+insId);
             } else {
-                defect.setNumber(company.getCodeName()+count);
+                defect.setNumber(company.getCodeName()+insId);
             }
             defectService.updDefect(defect);
             return JSON.toJSONString(Type.SUCCESS);
@@ -275,7 +279,7 @@ public class DefectController {
      * @return
      */
     @RequestMapping(value = "/startExecution",method = RequestMethod.PUT)
-    public synchronized Map<String,String> startExecution(Integer id){
+    public synchronized Map<String,String> startExecution(Integer id,String type,String delayETime,Integer delayReason){
         Map<String,String> map=new HashMap<>();
         Users users=this.getPrincipal();
         if(users==null){
@@ -285,15 +289,30 @@ public class DefectController {
         if(id!=null){
             Defect defect=defectService.getDefectById(id);
             if(defect!=null){
-                if(String.valueOf(defect.getEmpIds()).indexOf(String.valueOf(users.getEmployeeId()))>-1){
-                    defect.setType(2);
-                    defect.setRealSTime(DateFormat.getYMDHMS(new Date()));
-                    defectService.updDefect(defect);
-                    map.put("msg","success");
-                    return map;
+                if(type!=null&&type.equals("6")){
+                    if(String.valueOf(defect.getEmpIds()).indexOf(String.valueOf(users.getEmployeeId()))>-1){
+                        defect.setType(6);//延期中
+                        defect.setDelaySTime(DateFormat.getYMDHMS(new Date()));//延期开始时间
+                        defect.setDelayETime(delayETime);//延期结束时间
+                        defect.setDelayReason(delayReason);//延期理由
+                        defectService.updDefect(defect);
+                        map.put("msg","success");
+                        return map;
+                    }else{
+                        //无权限
+                        map.put("msg","noPermission");
+                    }
                 }else{
-                    //无权限
-                    map.put("msg","noPermission");
+                    if(String.valueOf(defect.getEmpIds()).indexOf(String.valueOf(users.getEmployeeId()))>-1){
+                        defect.setType(2);//消缺中
+                        defect.setRealSTime(DateFormat.getYMDHMS(new Date()));
+                        defectService.updDefect(defect);
+                        map.put("msg","success");
+                        return map;
+                    }else{
+                        //无权限
+                        map.put("msg","noPermission");
+                    }
                 }
             }
         }else{
@@ -323,7 +342,7 @@ public class DefectController {
      * @return
      */
     @RequestMapping("claim")
-    public synchronized String claim(String empIds,Integer id,String planedTime){
+    public synchronized String claim(String empIds,Integer id,String planedTime,String type,String delayETime,Integer delayReason){
         Subject subject=SecurityUtils.getSubject();
         if(!subject.isPermitted("缺陷检修班长")){
             return JSON.toJSONString(Type.NOPERMISSION);//无权限
@@ -331,17 +350,29 @@ public class DefectController {
         if(id!=null){
             Users users=this.getPrincipal();
             Defect defect=defectService.getDefectById(id);
-            if(empIds!=null){
-                defect.setEmpIds(empIds);
-                defect.setPlanedTime(planedTime);//计划完成时间
-                defect.setOrderReceivingTime(DateFormat.getYMDHMS(new Date()));//接单时间
-                defect.setType(5);
-                if(users==null){
-                    JSON.toJSONString(Type.NOUSER);//用户验证过期
-                }
-                defect.setClaimant(users.getEmployeeId());
+            //type=6
+            if(type!=null&&type.equals("6")){
+                defect.setType(6);//延期中
+                defect.setDelayBy(users.getEmployeeId());//申请延期人
+                defect.setDelaySTime(DateFormat.getYMDHMS(new Date()));//延期开始时间
+                defect.setDelayETime(delayETime);//延期结束时间
+                defect.setDelayReason(delayReason);//延期理由
+                //设置认领数据为空
             }else{
-                JSON.toJSONString(Type.FORMAT);//格式错误
+                if(empIds!=null){
+                    defect.setEmpIds(empIds);
+                    defect.setPlanedTime(planedTime);//计划完成时间
+                    defect.setOrderReceivingTime(DateFormat.getYMDHMS(new Date()));//接单时间
+                    defect.setType(5);//已认领
+                    //设置延期为空
+                    defect.setDelayBy(users.getEmployeeId());//申请延期人
+                    if(users==null){
+                        JSON.toJSONString(Type.NOUSER);//用户验证过期
+                    }
+                    defect.setClaimant(users.getEmployeeId());
+                }else{
+                    JSON.toJSONString(Type.FORMAT);//格式错误
+                }
             }
             defectService.updDefect(defect);
             return JSON.toJSONString(Type.SUCCESS);
@@ -366,7 +397,7 @@ public class DefectController {
                 if(defect.getConfirmer1Time()!=null){
                     return JSON.toJSONString(Type.REJECT);//已完成不可再确认
                 }
-                defect.setType(4);
+                defect.setType(4);//已完成
                 defect.setConfirmer1(users.getEmployeeId());
                 defect.setConfirmer1Time(DateFormat.getYMDHMS(new Date()));
                 defectService.updDefect(defect);
@@ -387,10 +418,13 @@ public class DefectController {
     public List<Map<String,Object>> getEquMap(HttpServletRequest request){
         String type=request.getParameter("type");
         Users users=this.getPrincipal();
+        Subject subject=SecurityUtils.getSubject();
 
         Map souMap=new HashMap();
-        if(users!=null){
-            souMap.put("department",users.getDepartmentId());
+        if(!subject.isPermitted("缺陷管理员")) {
+            if (users != null) {
+                souMap.put("department", users.getDepartmentId());
+            }
         }
         souMap.put("type",type);
         List<Map<String,Object>> list=equipmentService.getEquMap(souMap);
@@ -427,6 +461,30 @@ public class DefectController {
             list=companyService.getDepartmentList("1");
         }
         return list;
+    }
+
+    @RequestMapping("/getDefectHistiryByEqu")
+    public List<Map<String,String>> getDefectHistiryByEqu(Integer sysId,Integer euqipmentId){
+        Users users=this.getPrincipal();
+        Subject subject=SecurityUtils.getSubject();;
+        List<Map<String,String>> result=new ArrayList<>();
+        if(sysId==-1&&euqipmentId==-1){
+            return null;
+        }
+        if(users==null){
+            Map<String,String> map=new HashMap<>();
+            map.put("msg","noUser");
+            result.add(map);
+            return result;
+        }
+        Map map=new HashMap();
+        map.put("equipmentId",euqipmentId);
+        map.put("sysId",sysId);
+        if(!subject.isPermitted("缺陷管理员")){
+            map.put("departmentId",users.getDepartmentId());
+        }
+        result=defectService.getDefectHistiryByEqu(map);
+        return result;
     }
 
 }

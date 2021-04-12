@@ -35,7 +35,10 @@ public class Defect {
     private String number;//编号
     private Integer maintenanceCategory;// 检修类别;1：机务；2：电仪
     private String empIds;//执行人员Id
-
+    private String delaySTime;//延期开始时间
+    private String delayETime;//延期结束时间
+    private Integer delayBy;//延期申请人
+    private Integer delayReason;//延期理由
 
     //虚字段
     private String createdByName;//创建人
@@ -385,5 +388,37 @@ public class Defect {
 
     public void setConfirmer1Time(String confirmer1Time) {
         this.confirmer1Time = confirmer1Time;
+    }
+
+    public String getDelaySTime() {
+        return delaySTime;
+    }
+
+    public void setDelaySTime(String delaySTime) {
+        this.delaySTime = delaySTime;
+    }
+
+    public String getDelayETime() {
+        return delayETime;
+    }
+
+    public void setDelayETime(String delayETime) {
+        this.delayETime = delayETime;
+    }
+
+    public Integer getDelayBy() {
+        return delayBy;
+    }
+
+    public void setDelayBy(Integer delayBy) {
+        this.delayBy = delayBy;
+    }
+
+    public Integer getDelayReason() {
+        return delayReason;
+    }
+
+    public void setDelayReason(Integer delayReason) {
+        this.delayReason = delayReason;
     }
 }

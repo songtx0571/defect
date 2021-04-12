@@ -20,4 +20,6 @@ public interface DefectMapper {
     Defect getDefectById(Integer id);
 
     int getDefectCountByDep(int departmentId);
+
+    List<Defect> getDefectHistiryByEqu(Map map);
 }

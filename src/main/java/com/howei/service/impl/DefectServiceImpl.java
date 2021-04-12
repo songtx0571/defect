@@ -11,6 +11,8 @@ import com.howei.service.DefectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -43,5 +45,21 @@ public class DefectServiceImpl implements DefectService {
     @Override
     public int getDefectCountByDep(int departmentId) {
         return defectMapper.getDefectCountByDep(departmentId);
+    }
+
+    @Override
+    public List<Map<String, String>> getDefectHistiryByEqu(Map map) {
+        List<Defect> list=defectMapper.getDefectHistiryByEqu(map);
+        List<Map<String, String>> result=new ArrayList<>();
+        for (Defect defect:list){
+            Map<String,String> map1=new HashMap<>();
+            map1.put("created",defect.getCreated());
+            map1.put("abs",defect.getAbs());
+            map1.put("type",defect.getType().toString());
+            map1.put("sysName",defect.getSysName());
+            map1.put("equipmentName",defect.getEquipmentName());
+            result.add(map1);
+        }
+        return result;
     }
 }

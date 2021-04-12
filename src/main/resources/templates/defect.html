@@ -30,24 +30,25 @@
                 <input type="hidden" id="systemHidden">
                 <input type="hidden" id="equipmentHidden">
                 <input type="hidden" id="departmentHidden">
-                <div class="layui-inline">
+                <div class="layui-inline" style="width: 150px;">
                     <div class="layui-input-inline">
                         <select name="modules" lay-verify="required" lay-filter="system" lay-search="" id="system"></select>
                     </div>
                 </div>
-                <div class="layui-inline">
+                <div class="layui-inline" style="width: 150px;">
                     <div class="layui-input-inline">
                         <select name="modules" lay-verify="required" lay-filter="equipment" lay-search="" id="equipment"></select>
                     </div>
                 </div>
                 <shiro:hasPermission name="缺陷管理员">
-                <div class="layui-inline">
+                <div class="layui-inline" style="width: 150px;">
                     <div class="layui-input-inline">
                         <select name="modules" lay-verify="required" lay-filter="department" lay-search="" id="department"></select>
                     </div>
                 </div>
                 </shiro:hasPermission>
             </form>
+            <button type="button" class="layui-btn floatBtn" onclick="getChecked('6')">延期</button>
             <shiro:hasPermission name="缺陷运行岗位">
             <button type="button" style="margin-right: 0px;" class="layui-btn layui-btn-normal floatBtn" onclick="addDefect()">新增&nbsp;&nbsp;+</button>
             </shiro:hasPermission>
@@ -80,52 +81,39 @@
             <span style="color: #8fc323;">已消缺</span>
             {{#  } else if(d.type == 4) { }}
             <span style="color: green;">已完成</span>
+            {{#  } else if(d.type == 6) { }}
+            {{#  if(d.delayReason == 1){ }}
+            <span style="color: #001580;">等待备件</span>
+            {{#  } else if(d.delayReason == 2) { }}
+            <span style="color: #001580;">无法安措</span>
+            {{#  } else if(d.delayReason == 3) { }}
+            <span style="color: #001580;">停炉处理</span>
+            {{#  } else if(d.delayReason == 4) { }}
+            <span style="color: #001580;">继续观察</span>
+            {{#  } }}
             {{#  } }}
         </script>
-        <script type="text/html" id="tbBeOnDutyBar">
-            {{#  if(d.type == 4){ }}
-            <span style="color: green;">已确认</span>
-            {{#  } else { }}
-            <shiro:hasPermission name="缺陷运行岗位">
-            <a class="layui-btn layui-btn-xs" lay-event="beOnDuty">值班确认</a>
-            </shiro:hasPermission>
-            {{#  } }}
-        </script>
-        <script type="text/html" id="tbClaimBar">
-            {{#  if(d.empIds == null){ }}
+        <script type="text/html" id="tbOperationBar">
+            {{#  if(d.type == 1){ }}
             <shiro:hasPermission name="缺陷检修班长">
-            <a class="layui-btn layui-btn-xs" lay-event="claim">认领</a>
-            </shiro:hasPermission>
-            {{#  } else { }}
-            <span style="color: green;">{{d.claimantName}}</span>
-            {{#  } }}
-        </script>
-        <script type="text/html" id="tbImplementBar">
-            {{#  if(d.type == 1){ }}
-            <a class="layui-btn layui-btn-xs" lay-event="implement">开始执行</a>
-            {{#  } else if(d.type == 5) { }}
-            <a class="layui-btn layui-btn-xs" lay-event="implement">开始执行</a>
-            {{#  } else { }}
-            <span style="color: green;">消缺中</span>
-            {{#  } }}
-        </script>
-        <script type="text/html" id="tbHandleBar">
-            {{#  if(d.type == 1){ }}
-            <shiro:hasPermission name="缺陷检修岗位">
-            <a class="layui-btn layui-btn-xs" lay-event="handle">消缺反馈</a>
+                <a class="layui-btn layui-btn-fluid layui-btn-danger" lay-event="claim">认领</a>
             </shiro:hasPermission>
             {{#  } else if(d.type == 5) { }}
-            <shiro:hasPermission name="缺陷检修岗位">
-                <a class="layui-btn layui-btn-xs" lay-event="handle">消缺反馈</a>
-            </shiro:hasPermission>
+                <a class="layui-btn layui-btn-fluid layui-btn-warm" lay-event="implement">开始执行</a>
             {{#  } else if(d.type == 2) { }}
             <shiro:hasPermission name="缺陷检修岗位">
-            <a class="layui-btn layui-btn-xs" lay-event="handle">消缺反馈</a>
+                <a class="layui-btn layui-btn-fluid layui-btn-normal" lay-event="handle">消缺反馈</a>
             </shiro:hasPermission>
             {{#  } else if(d.type == 3) { }}
-            <span style="color: green;">已消缺</span>
+            <shiro:hasPermission name="缺陷运行岗位">
+                <a class="layui-btn layui-btn-fluid" lay-event="beOnDuty">值班确认</a>
+            </shiro:hasPermission>
             {{#  } else if(d.type == 4) { }}
             <span style="color: green;">已完成</span>
+            {{#  } else if(d.type == 6) { }}
+            <shiro:hasPermission name="缺陷检修班长">
+                <a class="layui-btn layui-btn-fluid layui-btn-danger" lay-event="claim">认领</a>
+            </shiro:hasPermission>
             {{#  } }}
         </script>
     </div>
@@ -219,6 +207,13 @@
             </tr>
             </thead>
         </table>
+        <!--新增历史记录-->
+        <div class="addHistory">
+            <h2 class="addHistoryTitle"></h2>
+            <ul class="addHistoryUl">
+
+            </ul>
+        </div>
     </div>
     <!-- 详细信息 -->
     <div class="detailedInfoDiv">
@@ -232,20 +227,25 @@
                 <th style="padding-right: 8px;box-sizing: border-box;">缺陷编号</th>
                 <td id="detailedInfoId"></td>
                 <th style="padding-right: 8px;box-sizing: border-box;">所属系统</th>
-                <td colspan="2" id="detailedInfoSys"></td>
+                <td colspan="4" id="detailedInfoSys"></td>
                 <th style="padding-right: 8px;box-sizing: border-box;">级别</th>
-                <td id="detailedInfoLevel"></td>
+                <td colspan="2" id="detailedInfoLevel"></td>
+            </tr>
+            <tr>
                 <th style="padding-right: 8px;box-sizing: border-box;">处理类别</th>
                 <td colspan="2" id="detailedInfoMan"></td>
+                <th style="padding-right: 8px;box-sizing: border-box;">创建人</th>
+                <td colspan="2" id="detailedInfoCreateName"></td>
+                <th style="padding-right: 8px;box-sizing: border-box;">创建时间</th>
+                <td colspan="3" id="detailedInfoCreateTime"></td>
             </tr>
             <tr>
                 <th style="padding-right: 8px;box-sizing: border-box;">状态</th>
                 <td colspan="2" id="detailedInfoStatus"></td>
-                <th style="padding-right: 8px;box-sizing: border-box;">创建时间</th>
-                <td colspan="3" id="detailedInfoCreateTime"></td>
-                <th style="padding-right: 8px;box-sizing: border-box;">创建人</th>
-                <td colspan="2" id="detailedInfoCreateName"></td>
-
+                <th style="padding-right: 8px;box-sizing: border-box;">延期原由</th>
+                <td colspan="2" id="detailedInfoBelay"></td>
+                <th style="padding-right: 8px;box-sizing: border-box;">延期时间</th>
+                <td colspan="3" id="detailedInfoBelayTime"></td>
             </tr>
             <tr>
                 <th style="padding-right: 8px;box-sizing: border-box;">消缺人</th>
@@ -367,11 +367,44 @@
                     <img src="" id="claimInfoImg" class="img-change" alt="无图片">
                 </td>
             </tr>
+            <tr class="claimInfoBelayTr1">
+                <th>延期完成时间</th>
+                <td colspan="5" style="padding-left: 8px;box-sizing: border-box;">
+                    <div class="layui-inline">
+                        <div class="layui-input-inline" style="width: 275px;">
+                            <input type="text" class="layui-input" name="entryDate" id="test3" readonly="" placeholder="年月日">
+                        </div>
+                        <div class="layui-input-inline" style="width: 275px;">
+                            <input type="text" class="layui-input" name="entryDate" id="test4" readonly="" placeholder="小时">
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            <tr class="claimInfoBelayTr1">
+                <th>延期原由</th>
+                <td colspan="5">
+                    <form class="layui-form" action="">
+                        <input type="hidden" id="claimInfoBelayHidden1">
+                        <div class="layui-inline" style="padding-left: 8px;box-sizing: border-box;">
+                            <div class="layui-input-inline" style="width:553px;">
+                                <select name="modules" lay-verify="required" lay-filter="claimInfoBelay1" lay-search="" id="claimInfoBelay1">
+                                    <option value="0">请选择</option>
+                                    <option value="1">等待备件</option>
+                                    <option value="2">无法安措</option>
+                                    <option value="3">停炉处理</option>
+                                    <option value="4">继续观察</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </td>
+            </tr>
             </tbody>
             <thead>
             <tr>
                 <td colspan="10" align="center">
                     <button type="button" class="layui-btn layui-btn-normal"  onclick="claimOk()">确定</button>
+                    <button type="button" class="layui-btn layui-btn-warm"  onclick="claimBelay1()">延期</button>
                     <button type="button" class="layui-btn" onclick="cancel()">取消</button>
                 </td>
             </tr>
@@ -416,9 +449,42 @@
                     <img src="" id="implementImg" class="img-change" alt="无图片">
                 </td>
             </tr>
+            <tr class="claimInfoBelayTr2">
+                <th>延期完成时间</th>
+                <td colspan="3" style="padding-left: 8px;box-sizing: border-box;">
+                    <div class="layui-inline">
+                        <div class="layui-input-inline" style="width: 275px;">
+                            <input type="text" class="layui-input" name="entryDate" id="test5" readonly="" placeholder="年月日">
+                        </div>
+                        <div class="layui-input-inline" style="width: 275px;">
+                            <input type="text" class="layui-input" name="entryDate" id="test6" readonly="" placeholder="小时">
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            <tr class="claimInfoBelayTr2">
+                <th>延期原由</th>
+                <td colspan="3">
+                    <form class="layui-form" action="">
+                        <input type="hidden" id="claimInfoBelayHidden2">
+                        <div class="layui-inline" style="padding-left: 8px;box-sizing: border-box;">
+                            <div class="layui-input-inline" style="width: 275px;">
+                                <select name="modules" lay-verify="required" lay-filter="claimInfoBelay2" lay-search="" id="claimInfoBelay2">
+                                    <option value="0">请选择</option>
+                                    <option value="1">等待备件</option>
+                                    <option value="2">无法安措</option>
+                                    <option value="3">停炉处理</option>
+                                    <option value="4">继续观察</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </td>
+            </tr>
             <tr>
                 <td colspan="4" style="text-align: center;">
                     <button type="button" class="layui-btn layui-btn-normal"  onclick="startFeedback()" id="startFeedbackBtn">开始执行</button>
+                    <button type="button" class="layui-btn layui-btn-warm"  onclick="claimBelay2()">延期</button>
                     <button type="button" class="layui-btn" onclick="cancel()">取消</button>
                 </td>
             </tr>
@@ -443,9 +509,9 @@
             </thead>
             <tbody>
             <tr>
-                <th>缺陷情况</th>
+                <th>缺陷描述</th>
                 <td colspan="4">
-                    <textarea id='feedbackSituation' rows="5" cols="50" maxlength="100"></textarea>
+                    <textarea id='feedbackAbs' rows="5" cols="50" maxlength="100"></textarea>
                 </td>
             </tr>
             <tr>

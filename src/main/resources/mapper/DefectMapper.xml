@@ -100,6 +100,18 @@
             <if test="confirmer1Time!=null">
                 confirmer1Time=#{confirmer1Time},
             </if>
+            <if test="delaySTime!=null">
+                delaySTime=#{delaySTime},
+            </if>
+            <if test="delayETime!=null">
+                delayETime=#{delayETime},
+            </if>
+            <if test="delayBy!=null">
+                delayBy=#{delayBy},
+            </if>
+            <if test="delayReason!=null">
+                delayReason=#{delayReason},
+            </if>
         </set>
         where id=#{id}
     </update>
@@ -110,6 +122,25 @@
 
     <select id="getDefectCountByDep" parameterType="int" resultType="int">
         select count(*) from defect where departmentId=#{departmentId}
+    </select>
+
+    <select id="getDefectHistiryByEqu" parameterType="java.util.HashMap" resultType="com.howei.pojo.Defect">
+        select de.created,de.abs,de.type,e1.name as equipmentName,e2.name as sysName
+        from defect de
+        left join equipment e2 on e2.id=de.sysId
+        left join equipment e1 on e1.id=de.equipmentId
+        <where>
+            <if test="sysId!=null and sysId!=0">
+                and de.sysId=#{sysId}
+            </if>
+            <if test="equipmentId!=null and equipmentId!=0">
+                and de.equipmentId=#{equipmentId}
+            </if>
+            <if test="departmentId!=null">
+                and de.departmentId=#{departmentId}
+            </if>
+        </where>
+        order by de.created desc
     </select>
 
 </mapper>
