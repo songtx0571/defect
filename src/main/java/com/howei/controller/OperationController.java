@@ -55,8 +55,12 @@ public class OperationController {
         record.setLongTime(timeMillis.toString());
         record.setCreateTime(sdf.format(timeMillis));
 
+        String level ="5";
         Map<String, Object> userSettinMap = userService.getUserSettingByEmployeeId(sendId);
-        String level = (String) userSettinMap.get(type + "_level");
+        if(userSettinMap!=null&& userSettinMap.get(type + "_level")!=null){
+            level = (String) userSettinMap.get(type + "_level");
+        }
+
         Long confirmTime = DateFormat.getConfirmTimeMills(timeMillis, level);
         if (confirmTime != null) {
             record.setConfirmTime(sdf.format(confirmTime));
