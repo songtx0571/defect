@@ -55,7 +55,6 @@ public class OperationController {
         record.setLongTime(timeMillis.toString());
         record.setCreateTime(sdf.format(timeMillis));
 
-
         String level ="5";
         Map<String, Object> userSettinMap = userService.getUserSettingByEmployeeId(sendId);
         if(userSettinMap!=null&& userSettinMap.get(type + "_level")!=null){
@@ -63,15 +62,11 @@ public class OperationController {
         }
 
         Long confirmTime = DateFormat.getConfirmTimeMills(timeMillis, level);
-
         if (confirmTime != null) {
             record.setConfirmTime(sdf.format(confirmTime));
         } else {
             record.setConfirmTime("1");
         }
-
-
-        System.out.println("Openation::" + record);
         try {
             sender.send(record);
             //webSocketOperation.sendMessageToAll(record.toString());

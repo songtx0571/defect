@@ -758,6 +758,15 @@ function claimBelay2 () {
     $(".claimInfoBelayTr2").css("display","revert");
     var id = $("#claimId").val();
 }
+//延期
+function claimBelay1 () {
+    $(".claimInfoBelayTr1").css("display","revert");
+    var id = $("#claimId").val();
+}
+function claimBelay2 () {
+    $(".claimInfoBelayTr2").css("display","revert");
+    var id = $("#claimId").val();
+}
 //打开处理反馈
 function handleInfo () {
     var data = $("#handleInfoP").text().trim();
