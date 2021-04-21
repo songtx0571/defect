@@ -1,10 +1,11 @@
 var path = "/defect";
+var index = 0;
 var addSystemName = "";
 var addEquipmentName = "";
 var maintenanceCategoryName = "";
 $(function () {
     showSelect();
-    showTable("1","","","");
+    showTable("","","","");
     showTime();
     showFormSelects();
     $('#addImg1').click(function(){
@@ -47,11 +48,15 @@ function showSelect() {
         });
         form.on('select(system)', function(data) {
             $("#systemHidden").val(data.value);
-            showTable('',$("#systemHidden").val(),$("#systemHidden").val(),$("#departmentHidden").val());
+            showTable('',$("#systemHidden").val(),$("#equipmentHidden").val(),$("#departmentHidden").val());
         });
         form.on('select(addSystem)', function(data) {
             $("#addSystemHidden").val(data.value);
             addSystemName = data.elem[data.elem.selectedIndex].text;
+            var sysId = Number($("#addSystemHidden").val());
+            var euqipmentId = Number($("#addEquipmentHidden").val());
+            getHis(sysId,euqipmentId);
+            $(".addHistoryTitle").html("历史记录<span onclick='hideHis()' style='display: inline-block;font-weight: bold;float: right;margin-right: 10px;cursor: pointer;'>×</span>");
         });
         $.ajax({
             type:'GET',
@@ -77,6 +82,10 @@ function showSelect() {
         form.on('select(addEquipment)', function(data) {
             $("#addEquipmentHidden").val(data.value);
             addEquipmentName = data.elem[data.elem.selectedIndex].text;
+            var sysId = Number($("#addSystemHidden").val());
+            var euqipmentId = Number($("#addEquipmentHidden").val());
+            getHis(sysId,euqipmentId);
+            $(".addHistoryTitle").html("历史记录<span onclick='hideHis()' style='display: inline-block;font-weight: bold;float: right;margin-right: 10px;cursor: pointer;'>×</span>");
         });
         form.on('select(level)', function(data) {
             $("#levelHidden").val(data.value);
@@ -88,7 +97,6 @@ function showSelect() {
         $.ajax({
             type:'GET',
             url:path + "/defect/getDepMap",
-            data:{type: 2},
             success:function(data){
                 $("#department").empty();
                 var option = "<option value='-1' >请选择部门</option>";
@@ -104,6 +112,59 @@ function showSelect() {
             $("#departmentHidden").val(data.value);
             showTable('',$("#systemHidden").val(),$("#equipmentHidden").val(),$("#departmentHidden").val());
         });
+        form.on('select(claimInfoBelay1)', function(data) {
+            $("#claimInfoBelayHidden1").val(data.value);
+        });
+        form.on('select(claimInfoBelay2)', function(data) {
+            $("#claimInfoBelayHidden2").val(data.value);
+        });
+    });
+}
+//隐藏历史记录
+function hideHis() {
+    $(".addHistory").css("display","none");
+}
+//历史记录查看
+function getHis(sysId,euqipmentId) {
+    var ul = $(".addHistoryUl");
+    var w = window.innerWidth;
+    if (w < 1000) {
+        $("#addDefectDiv table").css("margin-left", "10px");
+        var width = ((w-450-15)-10)+"px";
+    }else {
+        $("#addDefectDiv table").css("margin", "0 auto");
+        var width = ((w-450)/2-10)+"px";
+    }
+    $(".addHistory").css("display","block");
+    $(".addHistory").css("width",width);
+    $(".addHistory").css("height","98%");
+    $.ajax({
+        type: 'GET',
+        url: path + "/defect/getDefectHistiryByEqu",
+        data: {sysId:sysId,euqipmentId:euqipmentId},
+        success: function (json) {
+            ul.html("");
+            var li = "";
+            for (var i = 0; i < json.length; i ++) {
+                if (json[i].type == 1) {
+                    json[i].type = "未认领";
+                    li += "<li style='color: red;cursor: pointer;' onclick='getDetailedInfo("+json[i].id+")'><span>"+json[i].created+"</span>   <span>"+json[i].type+"</span>   <span style='margin-left: 20px;'>"+json[i].abs+"</span></listy>";
+                } else if (json[i].type == 2) {
+                    json[i].type = "消缺中";
+                    li += "<li style='color: #ff8100;cursor: pointer;' onclick='getDetailedInfo("+json[i].id+")'><span>"+json[i].created+"</span>   <span>"+json[i].type+"</span>   <span style='margin-left: 20px;'>"+json[i].abs+"</span></listy>";
+                } else if (json[i].type == 3) {
+                    json[i].type = "已消缺";
+                    li += "<li style='color: #8fc323;cursor: pointer;' onclick='getDetailedInfo("+json[i].id+")'><<span>"+json[i].created+"</span>   <span>"+json[i].type+"</span>   <span style='margin-left: 20px;'>"+json[i].abs+"</span></listy>";
+                } else if (json[i].type == 4) {
+                    json[i].type = "已完成";
+                    li += "<li style='color: green;cursor: pointer;' onclick='getDetailedInfo("+json[i].id+")'><span>"+json[i].created+"</span>   <span>"+json[i].type+"</span>   <span style='margin-left: 20px;'>"+json[i].abs+"</span></listy>";
+                } else if (json[i].type == 5) {
+                    json[i].type = "已认领";
+                    li += "<li style='color: #dcb422;cursor: pointer;' onclick='getDetailedInfo("+json[i].id+")'><span>"+json[i].created+"</span>   <span>"+json[i].type+"</span>   <span style='margin-left: 20px;'>"+json[i].abs+"</span></listy>";
+                }
+            }
+            ul.html(li)
+        }
     });
 }
 //显示日期
@@ -119,6 +180,33 @@ function showTime() {
         });
         laydate.render({
             elem: '#test2'
+            , type: 'time'
+            , trigger: 'click'
+            ,done: function(value){
+            }
+        });
+        laydate.render({
+            elem: '#test3'
+            , trigger: 'click'
+            ,done: function(value){
+            }
+        });
+        laydate.render({
+            elem: '#test4'
+            , type: 'time'
+            ,format: 'HH'
+            , trigger: 'click'
+            ,done: function(value){
+            }
+        });
+        laydate.render({
+            elem: '#test5'
+            , trigger: 'click'
+            ,done: function(value){
+            }
+        });
+        laydate.render({
+            elem: '#test6'
             , type: 'time'
             ,format: 'HH'
             , trigger: 'click'
@@ -138,17 +226,20 @@ function getChecked (type) {
     } else if (type == '3') { //已消缺
         showTable('3',$("#systemHidden").val(),$("#equipmentHidden").val(),$("#departmentHidden").val());
     } else if (type == '4') { //已完成
-        showTable('3',$("#systemHidden").val(),$("#equipmentHidden").val(),$("#departmentHidden").val());
+        showTable('4',$("#systemHidden").val(),$("#equipmentHidden").val(),$("#departmentHidden").val());
     } else if (type == '5') { //已认领
         showTable('5',$("#systemHidden").val(),$("#equipmentHidden").val(),$("#departmentHidden").val());
+    } else if (type == '6') { //延期中
+        showTable('6',$("#systemHidden").val(),$("#equipmentHidden").val(),$("#departmentHidden").val());
     }
 }
 //显示表格
 function showTable(type,sysId,equipmentId,departmentId) {
     var win = $(window).height();
     var height = win-160;
-    layui.use('table', function() {
+    layui.use(['table','form'], function() {
         var table = layui.table;
+        var form = layui.form;
         table.render({
             elem: '#demo'
             , height: height
@@ -158,28 +249,18 @@ function showTable(type,sysId,equipmentId,departmentId) {
             , limits: [50,100,150]
             , id: 'demoInfo'
             , cols: [[ //表头
-                , {fixed: 'left', title: '缺陷详情', toolbar: '#tbNumberBar', align: 'center', event: 'detailed', style:'cursor: pointer;',width: 80}
-                , {field: 'sysName', title: '所属系统', align: 'center',minWidth: 150}
-                , {field: 'equipmentName', title: '设备名称', align: 'center',minWidth: 150}
-                , {field: 'abs', title: '缺陷描述', align: 'center'}
-                , {field: 'createdByName', title: '创建人', align: 'center',minWidth: 100}
-                , {field: 'empIdsName', title: '执行人', align: 'center',minWidth: 100}
-                , {fixed: '', title: '状态', toolbar: '#tbTypeBar', align: 'center', minWidth: 80}
-                , {fixed: '', title: '认领人', toolbar: '#tbClaimBar', align: 'center', minWidth: 80}
-                , {field: 'created', title: '申请时间', align: 'center'}
-                , {field: 'planedTime', title: '计划完成时间', align: 'center'}
-                , {field: 'realETime', title: '实际完成时间', align: 'center'}
-                , {fixed: 'right', title: '执行', toolbar: '#tbImplementBar', align: 'center', minWidth: 90}
-                , {fixed: 'right', title: '消缺反馈', toolbar: '#tbHandleBar', align: 'center', minWidth: 90}
-                , {fixed: 'right', title: '值班确认', toolbar: '#tbBeOnDutyBar', align: 'center', minWidth: 90}
+                {fixed: 'left', title: '缺陷号', toolbar: '#tbNumberBar', align: 'center', event: 'detailed', style:'cursor: pointer;', width: 85}
+                , {field: 'type', title: '状态', toolbar: '#tbTypeBar', align: 'center', width: 100, sort:true}
+                , {field: 'abs', title: '缺陷描述'}
+                , {field: 'created', title: '申请时间', align: 'center', minWidth: 120, sort: true}
+                , {fixed: 'right', title: '操作', toolbar: '#tbOperationBar', align: 'center', width: 200}
             ]]
             , parseData: function (res) {
                 if (res.msg == "NoUser") {
                     layer.alert("当前用户过期");
                 }
             }
-            , done: function (res, curr, count) {
-            }
+            , done: function (res, curr, count) {}
         });
         table.on('tool(test)', function(obj){ //注：tool 是工具条事件名，test 是 table 原始容器的属性 lay-filter="对应的值"
             var data = obj.data; //获得当前行数据
@@ -187,10 +268,6 @@ function showTable(type,sysId,equipmentId,departmentId) {
             if (obj.event === 'beOnDuty') {// 值班确认
                 if (data.type != "3") {
                     layer.alert("请先完成任务！");
-                    return;
-                }
-                if ($("#addUserId").val() != data.createdBy) {
-                    layer.alert("无权限！");
                     return;
                 }
                 layer.open({
@@ -220,6 +297,12 @@ function showTable(type,sysId,equipmentId,departmentId) {
                     }
                 });
             } else if (obj.event === 'claim'){ //认领
+                $("#test3").val("");
+                $("#test4").val("");
+                $("#claimInfoBelay1").val("0");
+                $("#claimInfoBelayHidden1").val("");
+                $(".claimInfoBelayTr1").css("display","none");
+                form.render(); //更新全部
                 $.ajax({
                     "type" : 'post',
                     "url": path + "/defect/claim",
@@ -246,10 +329,15 @@ function showTable(type,sysId,equipmentId,departmentId) {
                 $("#handleInfoP").text(jStr);
                 handleInfo();
             } else if (obj.event === 'detailed'){ //缺陷详情
-                $("#detailedInfoP").text(jStr);
-                detailedInfo();
+                getDetailedInfo(data.id);
             } else if (obj.event === 'implement') { //开始执行
                 $("#implementInfoP").text(jStr);
+                $(".claimInfoBelayTr2").css("display","none");
+                $("#test5").val("");
+                $("#test6").val("");
+                $("#claimInfoBelay2").val("0");
+                $("#claimInfoBelayHidden2").val("");
+                form.render(); //更新全部
                 implementInfo();
             }
         });
@@ -257,10 +345,12 @@ function showTable(type,sysId,equipmentId,departmentId) {
 }
 //显示新增页面
 function addDefect () {
+    $(".addHistory").css("display","none");
     $.ajax({
         "type" : 'post',
         "url": path + "/defect/getPermission",
         dataType: "json",
+        data: {permissionName: "缺陷运行岗位"},
         "success":function(data){
             if (data == "false") {
                 layer.alert("无添加权限！");
@@ -345,14 +435,10 @@ function insert () {
                 dataType: "json",
                 contentType: "application/json; charset=utf-8",
                 "success":function(data){
-                    ajaxFun(data,"缺陷添加成功!");
+                    ajaxFun(data,"缺陷添加成功!",'新增');
                 }
             });
-            if (maintenanceCategoryName == "") {
-                maintenanceCategoryName = "机务";
-            }
-            var content = addSystemName+" "+addEquipmentName +" "+$('#levelHidden').val()+"类" +" "+maintenanceCategoryName;
-            operationSend('新增缺陷',content,"");
+
         }
     });
 }
@@ -391,65 +477,106 @@ function reduceImg(id) {
     img.attr("src","");
     img.css("display","none");
 }
-//缺陷详情
-function detailedInfo() {
-    var data = $("#detailedInfoP").text().trim();
-    // 将字符串转换为json
-    data = eval('(' + data + ')');
-    $("#detailedInfoId").text(data.number);//编号
-    $("#detailedInfoSys").text(data.sysName);//系统
-    $("#detailedInfoLevel").text(data.level+"类");//级别
-    if (data.maintenanceCategory == 1) {//类别
-        $("#detailedInfoMan").text("机务");
-    } else {
-        $("#detailedInfoMan").text("电仪");
-    }
-    if (data.maintenanceCategory == 1) {//状态
-        $("#detailedInfoStatus").text("未认领");
-    } else if (data.maintenanceCategory == 2) {
-        $("#detailedInfoStatus").text("消缺中");
-    }if (data.maintenanceCategory == 3) {
-        $("#detailedInfoStatus").text("已完成");
-    }
-    $("#detailedInfoCreateName").text(data.createdByName);//创建人
-    $("#detailedInfoCreateTime").text(data.created);//创建时间
-    $("#detailedInfoStaff").text(data.empIdsName);//消缺人
-    $("#detailedInfoPlanedTime").text(data.planedTime);//计划完成时间
-    $("#detailedInfoRealETime").text(data.realETime);//实际完成时间
-    $("#detailedInfoAbs").val(data.abs);//缺陷描述
-    $("#detailedInfoMethod").val(data.method);//处理措施
-    $("#detailedInfoProblem").val(data.problem);//遗留问题
-    $("#detailedInfoRemark").val(data.remark);//备注
-    $("#detailedInfoBImg").css("display","block");
-    $("#detailedInfoAImg").css("display","block");
-    $("#detailedInfoBImg").attr("src", "data:img/jpeg;base64,"+data.bPlc64);//消缺前图片
-    $("#detailedInfoAImg").attr("src", "data:img/jpeg;base64,"+data.aPlc64);//消缺后图片
-    if(data.bPlc64==null){
-        $("#detailedInfoBImg").css("display","none");
-    }else if (data.bPlc64 == "") {
-        $("#detailedInfoBImg").attr("src","../img/noImg.png");
-    }
-    if(data.aPlc64==null){
-        $("#detailedInfoAImg").css("display","none");
-    }else if (data.aPlc64 == "") {
-        $("#detailedInfoAImg").attr("src","../img/noImg.png");
-    }
-    layui.use('layer', function() { //独立版的layer无需执行这一句
-        var $ = layui.jquery, layer = layui.layer; //独立版的layer无需执行这一句
-        layer.open({
-            type: 1
-            , id: 'detailedInfoDiv' //防止重复弹出
-            , content: $(".detailedInfoDiv")
-            , btnAlign: 'c' //按钮居中
-            , shade: 0.4 //不显示遮罩
-            , area: ['100%', '100%']
-            , yes: function () {
+//根据id查询缺陷详单
+function getDetailedInfo (id) {
+    $.ajax({
+        type: 'GET',
+        url: path + "/defect/getDefectById",
+        data: {id:id},
+        success: function (data) {
+            $("#detailedInfoId").text(data.number);//编号
+            $("#detailedInfoSys").text(data.sysName+","+data.equipmentName);//系统 设备
+            $("#detailedInfoLevel").text(data.level+"类");//级别
+            if (data.maintenanceCategory == 1) {//类别
+                $("#detailedInfoMan").text("机务");
+            } else {
+                $("#detailedInfoMan").text("电仪");
             }
-        });
-    });
+            if (data.type == 1) {//状态
+                $("#detailedInfoStatus").text("未认领");
+            } else if (data.type == 2) {
+                $("#detailedInfoStatus").text("消缺中");
+            } else if (data.type == 3) {
+                $("#detailedInfoStatus").text("已消缺");
+            } else if (data.type == 4) {
+                $("#detailedInfoStatus").text("已完成");
+            } else if (data.type == 5) {
+                $("#detailedInfoStatus").text("已认领");
+            } else if (data.type == 6) {
+                $("#detailedInfoStatus").text("延期中");
+            }
+            $("#detailedInfoCreateName").text(data.createdByName);//创建人
+            $("#detailedInfoCreateTime").text(data.created);//创建时间
+            if (data.delayReason == 1) {
+                $("#detailedInfoBelay").text('等待备件');//延期原由
+            } else if (data.delayReason == 2) {
+                $("#detailedInfoBelay").text('无法安措');//延期原由
+            } else if (data.delayReason == 3) {
+                $("#detailedInfoBelay").text('停炉处理');//延期原由
+            } else if (data.delayReason == 4) {
+                $("#detailedInfoBelay").text('继续观察');//延期原由
+            } else {
+                $("#detailedInfoBelay").text('无');//延期原由
+            }
+            $("#detailedInfoBelayTime").text(data.delayETime);//延期时间
+            $("#detailedInfoStaff").text(data.empIdsName);//消缺人
+            $("#detailedInfoPlanedTime").text(data.planedTime);//计划完成时间
+            $("#detailedInfoRealETime").text(data.realETime);//实际完成时间
+            $("#detailedInfoAbs").val(data.abs);//缺陷描述
+            $("#detailedInfoMethod").val(data.method);//处理措施
+            $("#detailedInfoProblem").val(data.problem);//遗留问题
+            $("#detailedInfoRemark").val(data.remark);//备注
+            $("#detailedInfoBImg").css("display","block");
+            $("#detailedInfoAImg").css("display","block");
+            $("#detailedInfoBImg").attr("src", "data:img/jpeg;base64,"+data.bPlc64);//消缺前图片
+            $("#detailedInfoAImg").attr("src", "data:img/jpeg;base64,"+data.aPlc64);//消缺后图片
+            if(data.bPlc64==null){
+                $("#detailedInfoBImg").css("display","none");
+            }else if (data.bPlc64 == "") {
+                $("#detailedInfoBImg").attr("src","../img/noImg.png");
+            }
+            if(data.aPlc64==null){
+                $("#detailedInfoAImg").css("display","none");
+            }else if (data.aPlc64 == "") {
+                $("#detailedInfoAImg").attr("src","../img/noImg.png");
+            }
+            layui.use('layer', function() { //独立版的layer无需执行这一句
+                var $ = layui.jquery, layer = layui.layer; //独立版的layer无需执行这一句
+                index = layer.open({
+                    type: 1
+                    , id: 'detailedInfoDiv' //防止重复弹出
+                    , content: $(".detailedInfoDiv")
+                    , btnAlign: 'c' //按钮居中
+                    , shade: 0.4 //不显示遮罩
+                    , area: ['100%', '100%']
+                    , yes: function () {
+                    }
+                });
+            });
+            }
+        })
+
 }
+
 //打开认领缺陷
 function claimInfo () {
+    layui.use('form', function() {
+        var form = layui.form;
+        $("#test1").val("");
+        $("#test2").val("");
+        $("#claimInfoDescribeId").val("");
+        form.render('select');
+        form.render();
+    });
+    layui.use(['jquery', 'formSelects'], function () {
+        var formSelects = layui.formSelects;
+        formSelects.config('tags', {
+            keyName: 'text',
+            keyVal: 'id',
+        }).data('tags', 'server', {
+            url: path + '/defect/getEmpMap'
+        });
+    });
     var data = $("#claimInfoP").text().trim();
     data = eval('(' + data + ')');
     $("#claimId").val(data.id);//编号
@@ -506,32 +633,40 @@ function showFormSelects () {
 }
 //认领缺陷
 function claimOk() {
+    var type = "";
     var empIds = $("#claimInfoDescribeId").val();
     var id = $("#claimId").val();
     var planedTime = $("#test1").val()+" "+$("#test2").val();
-    if (empIds == "" || empIds == null) {
-        layer.alert("请选择执行人员！");
-        return;
-    }
-    if (planedTime.trim() == "") {
-        layer.alert("请选择计划结束时间！");
-        return;
+    var claimInfoBelayTime = $("#test3").val()+" "+$("#test4").val();
+    var claimInfoBelay = Number($("#claimInfoBelayHidden1").val());
+    if (claimInfoBelay == 0 && claimInfoBelayTime.trim() == "") {
+        if (empIds == "" || empIds == null || $("#test1").val() == "" || $("#test2").val() == ""){
+            layer.alert("请选择执行人或时间");
+            return;
+        }
+        type = "2";
+    } else {
+        if (claimInfoBelay == 0 || claimInfoBelayTime.trim() == "") {
+            layer.alert("请选择延期时间和原由");
+            return;
+        }
+        empIds = "";
+        planedTime = "";
+        type = "6";
     }
     $.ajax({
         "type" : 'post',
         "url": path + "/defect/claim",
         dataType: "json",
-        data: {empIds:empIds,id:id,planedTime:planedTime},
+        data: {empIds:empIds,id:id,planedTime:planedTime,delayETime:claimInfoBelayTime,delayReason:claimInfoBelay,type: type},
         "success":function(data){
-            ajaxFun(data,"缺陷认领成功!");
+            ajaxFun(data,"缺陷认领成功!",'认领');
         }
     });
-    var content = $("#claimantName").text()+""+$("#claimInfoSys").text() +" " + $("#claimInfoLevel").text()+" "+$("#claimMaintenanceCategory").val();
-    var remark = "认领人:"+$("#claimantName").text();
-    operationSend('认领缺陷',content,remark);
 }
 //打开开始执行
 function implementInfo() {
+    $("#startFeedbackBtn").css("display","revert");
     var data = $("#implementInfoP").text().trim();
     data = eval('(' + data + ')');
     if (data.type == '1') {
@@ -549,7 +684,6 @@ function implementInfo() {
     $("#implementSys").text(data.sysName);//系统
     $("#implementEquipment").text(data.equipmentName);//设备
     $("#implementAbs").text(data.abs);//缺陷描述
-    // $("#feedbackSituation").val(data.situation);//缺陷情况
     $("#implementImg").attr("src", "data:img/jpeg;base64,"+data.bPlc64);//消缺前图片
     $("#implementImg").css("display","block");
     if (data.bPlc64 == "") {
@@ -574,20 +708,34 @@ function implementInfo() {
 }
 //开始执行
 function startFeedback() {
+    $("#startFeedbackBtn").css("display","revert");
     var id = Number($("#implementId").val());
+    var claimInfoBelayTime = $("#test5").val()+" "+$("#test4").val();
+    var claimInfoBelay = Number($("#claimInfoBelayHidden2").val());
+    var type = "";
+    if (claimInfoBelayTime.trim() == "" && claimInfoBelay == 0){
+        type = "5";
+    }else {
+        if (claimInfoBelay == 0 || claimInfoBelayTime.trim() == "") {
+            layer.alert("请选择延期时间和原由");
+            return;
+        }
+        type = "6";
+    }
     $.ajax({
         "type" : 'put',
         "url": path + "/defect/startExecution",
-        data: {id: id},
+        data: {id: id, type: type,delayETime:claimInfoBelayTime,delayReason:claimInfoBelay},
         dataType: "json",
         "success":function(data){
             if (data.msg == "success") {
+                var content = $("#implementSys").text()+" "+$("#implementEquipment").text()+" "+$("#implementLevel").text();
+                operationSend('开始消缺',content,"");
                 layer.alert("已开始");
                 layer.closeAll();
                 showTable('',$("#systemHidden").val(),$("#equipmentHidden").val(),$("#departmentHidden").val());
                 $("#startFeedbackBtn").css("display","none");
                 $("#feedbackAbs").removeAttr("disabled");
-                $("#feedbackSituation").removeAttr("disabled");
                 $("#feedbackMethod").removeAttr("disabled");
                 $("#feedbackProblem").removeAttr("disabled");
                 $("#feedbackRemark").removeAttr("disabled");
@@ -600,8 +748,15 @@ function startFeedback() {
             }
         }
     });
-    var content = $("#implementSys").text()+" "+$("#implementEquipment").text()+" "+$("#implementLevel").text();
-    operationSend('开始消缺',content,"");
+}
+//延期
+function claimBelay1 () {
+    $(".claimInfoBelayTr1").css("display","revert");
+    var id = $("#claimId").val();
+}
+function claimBelay2 () {
+    $(".claimInfoBelayTr2").css("display","revert");
+    var id = $("#claimId").val();
 }
 //打开处理反馈
 function handleInfo () {
@@ -617,10 +772,10 @@ function handleInfo () {
     }
     $("#feedbackTime").text(data.year);//创建时间
     $("#feedbackRealSTime").text(data.realSTime);//开始执行时间
+    $("#feedbackPlanedTime").val(data.planedTime);//计划完成时间
     $("#feedbackSys").val(data.sysName);//系统
     $("#feedbackEquipment").val(data.equipmentName);//设备
     $("#feedbackAbs").val(data.abs);//缺陷描述
-    $("#feedbackSituation").val(data.situation);//缺陷情况
     $("#feedbackRealSTime").val(data.realSTime);//实际开始时间
     $("#feedbackMethod").val(data.method);//处理措施
     $("#feedbackProblem").val(data.problem);//遗留问题
@@ -637,14 +792,12 @@ function handleInfo () {
     if (data.realSTime == null || data.realSTime == "") {
         $("#startFeedbackBtn").css("display","revert");
         $("#feedbackAbs").attr({"disabled":"disabled"});
-        $("#feedbackSituation").attr({"disabled":"disabled"});
         $("#feedbackMethod").attr({"disabled":"disabled"});
         $("#feedbackProblem").attr({"disabled":"disabled"});
         $("#feedbackRemark").attr({"disabled":"disabled"});
     } else {
         $("#startFeedbackBtn").css("display","none");
         $("#feedbackAbs").removeAttr("disabled");
-        $("#feedbackSituation").removeAttr("disabled");
         $("#feedbackMethod").removeAttr("disabled");
         $("#feedbackProblem").removeAttr("disabled");
         $("#feedbackRemark").removeAttr("disabled");
@@ -692,9 +845,9 @@ function insertFeedback () {
                 return;
             }
             defect.id = Number($('#feedbackId').val());
-            defect.situation = $('#feedbackSituation').val();
-            if(!defect.situation){
-                layer.alert("缺陷情况不可为空!");
+            defect.abs = $('#feedbackAbs').val();
+            if(!defect.abs){
+                layer.alert("缺陷描述不可为空!");
                 return;
             }
             defect.method = $('#feedbackMethod').val();
@@ -706,7 +859,8 @@ function insertFeedback () {
             defect.remark = $('#feedbackRemark').val();
             defect.completer = Number($('#feedbackCompleterId').val());
             defect.aPlc = Json.message;//图片
-            defect.realETime = year +"-"+month+"-"+day+" "+hour;
+            defect.realSTime = $("#feedbackRealSTime").val();
+            defect.planedTime = $("#feedbackPlanedTime").val();
             if ($("#img-change2").attr("src") == "") {
                 defect.aPlc = null;
             }
@@ -717,11 +871,9 @@ function insertFeedback () {
                 dataType: "json",
                 contentType: "application/json; charset=utf-8",
                 "success":function(data){
-                    ajaxFun(data,"处理反馈单完成!");
+                    ajaxFun(data,"处理反馈单完成!",'完成');
                 }
             });
-            var content = $("#feedbackSys").val()+" "+$("#feedbackEquipment").val()+" "+$("#feedbackLevel").val()+" "+$("#feedbackDepartment").val();
-            operationSend('完成消缺',content,"");
         }
     });
 }
@@ -736,8 +888,22 @@ function operationSend(verb,content,remark) {
     });
 }
 //执行函数
-function ajaxFun(data,tips) {
+function ajaxFun(data,tips,operation) {
+    var content = "";
     if (data == "SUCCESS"){
+        if (operation == "新增") {
+            if (maintenanceCategoryName == "") {
+                maintenanceCategoryName = "机务";
+            }
+            content = addSystemName+" "+addEquipmentName +" "+$('#levelHidden').val()+"类" +" "+maintenanceCategoryName;
+            operationSend('新增缺陷',content,"");
+        } else  if (operation == "认领") {
+            content = $("#claimantName").text()+""+$("#claimInfoSys").text() +" " + $("#claimInfoLevel").text()+" "+$("#claimMaintenanceCategory").val();
+            operationSend('认领缺陷',content,"认领人:"+$("#claimantName").text());
+        } else  if (operation == "完成") {
+            content = $("#feedbackSys").val()+" "+$("#feedbackEquipment").val()+" "+$("#feedbackLevel").val()+" "+$("#feedbackDepartment").val();
+            operationSend('完成消缺',content,"");
+        }
         layer.alert(tips);
         showTable('',$("#systemHidden").val(),$("#equipmentHidden").val(),$("#departmentHidden").val());
         layer.closeAll();
@@ -761,4 +927,7 @@ function ajaxFun(data,tips) {
 //取消
 function cancel() {
     layer.closeAll();
+}
+function cancel1 () {
+    layer.close(index)
 }

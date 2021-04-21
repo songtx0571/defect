@@ -100,16 +100,56 @@
             <if test="confirmer1Time!=null">
                 confirmer1Time=#{confirmer1Time},
             </if>
+            <if test="delaySTime!=null">
+                delaySTime=#{delaySTime},
+            </if>
+            <if test="delayETime!=null">
+                delayETime=#{delayETime},
+            </if>
+            <if test="delayBy!=null">
+                delayBy=#{delayBy},
+            </if>
+            <if test="delayReason!=null">
+                delayReason=#{delayReason},
+            </if>
+            <if test="realExecuteTime!=null">
+                realExecuteTime=#{realExecuteTime},
+            </if>
         </set>
         where id=#{id}
     </update>
 
     <select id="getDefectById" parameterType="int" resultType="com.howei.pojo.Defect">
-        select * from defect where id=#{id}
+        select de.*,e1.name as sysName,e2.name as equipmentName,ee2.name as claimantName,ee1.name as createdByName
+        from defect de
+        left join equipment e1 on e1.id=de.sysId
+        left join equipment e2 on e2.id=de.equipmentId
+        left join employee ee1 on ee1.id=de.createdBy
+        left join employee ee2 on ee2.id=de.claimant
+        where de.id=#{id}
     </select>
 
     <select id="getDefectCountByDep" parameterType="int" resultType="int">
         select count(*) from defect where departmentId=#{departmentId}
+    </select>
+
+    <select id="getDefectHistiryByEqu" parameterType="java.util.HashMap" resultType="com.howei.pojo.Defect">
+        select de.id,de.created,de.abs,de.type,e1.name as equipmentName,e2.name as sysName
+        from defect de
+        left join equipment e2 on e2.id=de.sysId
+        left join equipment e1 on e1.id=de.equipmentId
+        <where>
+            <if test="sysId!=null and sysId!=0">
+                and de.sysId=#{sysId}
+            </if>
+            <if test="equipmentId!=null and equipmentId!=0">
+                and de.equipmentId=#{equipmentId}
+            </if>
+            <if test="departmentId!=null">
+                and de.departmentId=#{departmentId}
+            </if>
+        </where>
+        order by de.created desc
     </select>
 
 </mapper>

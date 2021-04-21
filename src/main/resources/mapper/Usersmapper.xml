@@ -237,4 +237,7 @@
             limit ${page},${pageSize}
         </if>
     </select>
+    <select id="getUserSettingByEmployeeId" resultType="java.util.Map">
+        select * from user_setting where employee_id=#{employeeId}
+    </select>
 </mapper>

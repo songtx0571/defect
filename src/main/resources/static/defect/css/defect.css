@@ -11,7 +11,7 @@
 }
 .floatBtn{
     float: left;
-    margin-right: 42px;
+    margin-right: 17px;
 }
 .content{
     width: 100%;
@@ -21,8 +21,12 @@
 .addDefectDiv, .detailedInfoDiv,.claimInfoDiv,.handleInfoDiv,.implementInfoDiv{
     display: none;
 }
-.addDefectDiv table,.handleInfoDiv table,.implementInfoDiv table{
+.handleInfoDiv table,.implementInfoDiv table{
     width: 500px;
+    margin: 0 auto;
+}
+.addDefectDiv table{
+    width: 450px;
     margin: 0 auto;
 }
 .detailedInfoDiv table{
@@ -32,7 +36,7 @@
 .claimInfoDiv table{
     width: 650px;
     margin: 0 auto;
- }
+}
 .addDefectDiv table tr, .detailedInfoDiv table tr, .claimInfoDiv table tr,.handleInfoDiv table tr,.implementInfoDiv table tr{
     line-height: 50px;
 }
@@ -66,7 +70,34 @@
 .file{
     display: none;
 }
+.claimInfoBelayTr1,.claimInfoBelayTr2{
+    display: none;
+}
+/*历史记录*/
+.addHistory{
+    position: fixed;
+    right: 0px;
+    top: 43px;
+    display: none;
+    box-shadow: -5px 12px 10px #908787;
+    overflow: scroll;
+}
+.addHistory .addHistoryTitle{
+    text-align: center;
+    font-size: 25px;
+    margin: 10px 0;
+}
+.addHistory ul li {
+    text-indent: 20px;
+    line-height: 35px;
+}
+.addHistory ul li span {
+    font-size: 20px;
+}
 /*layui多选框*/
 .icon-close{
     display: none;
+}
+.layui-table-cell  .layui-btn-fluid{
+    line-height: 30px;
 }

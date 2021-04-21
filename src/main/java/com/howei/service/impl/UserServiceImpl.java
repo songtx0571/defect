@@ -150,4 +150,9 @@ public class UserServiceImpl implements UserService {
     public List<Users> searchUsersList(Map map) {
         return usersMapper.searchUsersList(map);
     }
+
+    @Override
+    public Map<String, Object> getUserSettingByEmployeeId(Integer employeeId) {
+        return usersMapper.getUserSettingByEmployeeId(employeeId);
+    }
 }
