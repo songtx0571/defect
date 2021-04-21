@@ -1,5 +1,6 @@
 package com.howei.util;
 
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -99,7 +100,7 @@ public class DateFormat {
         long nd = 1000 * 24 * 60 * 60;
         long nh = 1000 * 60 * 60;
         long nm = 1000 * 60;
-        SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm");
         long bt=sdf.parse(beginTime).getTime();
         long et=sdf.parse(endTime).getTime();
         long diff=(et-bt);
@@ -128,5 +129,51 @@ public class DateFormat {
         Date date=new Date();
         long time=date.getTime();
         return time;
+    }
+
+    /**
+     *
+     * @param timeMillis
+     * @param level
+     * @return
+     */
+    public static Long getConfirmTimeMills(Long timeMillis, String level) {
+        if ("0".equals(level)) {
+            return timeMillis + 8 * 60 * 60 * 1000;
+        } else if ("1".equals(level)) {
+            return timeMillis + 16 * 60 * 60 * 1000;
+        } else if ("2".equals(level)) {
+            return timeMillis + 24 * 60 * 60 * 1000;
+        } else if ("3".equals(level)) {
+            return timeMillis + 72 * 60 * 60 * 1000;
+        } else if ("4".equals(level)) {
+            return timeMillis + 16 * 60 * 60 * 1000;
+        } else if ("5".equals(level)) {
+            return timeMillis + 168 * 60 * 60 * 1000;
+        }
+        return null;
+    }
+
+    /**
+     * 获取两个时间的相差小时
+     * @param beginTime
+     * @param endTime
+     * @return
+     * @throws ParseException
+     */
+    public static double getBothNH(String beginTime,String endTime)throws ParseException{
+        long nh = 1000 * 60 * 60;
+        long nm = 1000 * 60;
+        SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        long bt=sdf.parse(beginTime).getTime();
+        long et=sdf.parse(endTime).getTime();
+        long diff=(et-bt);
+        // 计算差多少小时
+        long hour = diff / nh;
+        // 计算差多少分钟
+        long min = diff  % nh / nm;
+        BigDecimal bd = new BigDecimal(hour+(Double.valueOf(min)/60));
+        double result=bd.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
+        return result;
     }
 }

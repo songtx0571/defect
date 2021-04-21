@@ -58,6 +58,7 @@ public class DefectServiceImpl implements DefectService {
             map1.put("type",defect.getType().toString());
             map1.put("sysName",defect.getSysName());
             map1.put("equipmentName",defect.getEquipmentName());
+            map1.put("id",defect.getId().toString());
             result.add(map1);
         }
         return result;

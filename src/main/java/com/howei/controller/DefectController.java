@@ -19,6 +19,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.*;
 
 import static com.howei.util.Image.ImageToBase64ByLocal;
@@ -94,7 +95,7 @@ public class DefectController {
      * @return
      */
     @RequestMapping(value = "/getDefectList",method = RequestMethod.GET)
-    public Result getDefectList(HttpServletRequest request){
+    public Result getDefectList(HttpServletRequest request) throws ParseException{
         String type=request.getParameter("type");//缺陷状态
         String sysId=request.getParameter("sysId");//系统
         String equipmentId=request.getParameter("equipmentId");//设备
@@ -174,6 +175,20 @@ public class DefectController {
                     defect.setbPlc64(bPlc64);
                 }
             }
+            if(Double.valueOf(defect.getRealExecuteTime())==null){
+                String realETime=defect.getRealETime();//实际结束时间
+                String planedTime=defect.getPlanedTime();//计划完成时间
+                String realSTime=defect.getRealSTime();//实际开始时间
+                if(realETime!=null&&planedTime!=null&&realSTime!=null){
+                    double diff1=DateFormat.getBothNH(realSTime,planedTime);
+                    double diff2=DateFormat.getBothNH(realSTime,realETime);
+                    if(diff1<=diff2){
+                        defect.setRealExecuteTime(diff1);
+                    }else{
+                        defect.setRealExecuteTime(diff2);
+                    }
+                }
+            }
         }
         Result result=new Result(count,list,0,"success");
         return result;
@@ -243,7 +258,7 @@ public class DefectController {
      * @return
      */
     @RequestMapping(value = "/updDefect",method = RequestMethod.PUT)
-    public synchronized String updDefect(@RequestBody Defect defect){
+    public synchronized String updDefect(@RequestBody Defect defect) throws ParseException {
         Integer id=defect.getId();
         Integer type=defect.getType();
         Users users=this.getPrincipal();
@@ -265,7 +280,17 @@ public class DefectController {
             if(type.equals(2)){      //'消缺中'状态修改为'已完成'状态
                 defect.setType(3);//已消缺
                 defect.setCompleter(users.getEmployeeId());
-                defect.setRealETime(DateFormat.getYMDHMS(new Date()));
+                String realETime=DateFormat.getYMDHMS(new Date());//实际结束时间
+                defect.setRealETime(realETime);
+                String planedTime=defect.getPlanedTime();//计划完成时间
+                String realSTime=defect.getRealSTime();//实际开始时间
+                double diff1=DateFormat.getBothNH(realSTime,planedTime);
+                double diff2=DateFormat.getBothNH(realSTime,realETime);
+                if(diff1<=diff2){
+                    defect.setRealExecuteTime(diff1);
+                }else{
+                    defect.setRealExecuteTime(diff2);
+                }
                 defectService.updDefect(defect);
                 return JSON.toJSONString(Type.SUCCESS);
             }
@@ -463,6 +488,12 @@ public class DefectController {
         return list;
     }
 
+    /**
+     * 根据设备获取历史缺陷
+     * @param sysId
+     * @param euqipmentId
+     * @return
+     */
     @RequestMapping("/getDefectHistiryByEqu")
     public List<Map<String,String>> getDefectHistiryByEqu(Integer sysId,Integer euqipmentId){
         Users users=this.getPrincipal();
@@ -486,5 +517,47 @@ public class DefectController {
         result=defectService.getDefectHistiryByEqu(map);
         return result;
     }
+
+    /**
+     * 获取缺陷
+     * @param id
+     * @return
+     */
+    @RequestMapping("/getDefectById")
+    public Defect getDefectById(Integer id){
+        if(id!=null){
+            Defect defect = defectService.getDefectById(id);
+            //加载用户Map
+            Map empMap=getUsersMap();
+            String[] strs=(defect.getEmpIds()!=null&&(!defect.getEmpIds().equals("")))? defect.getEmpIds().split(","):null;
+            if(strs!=null){
+                String empIdsName="";
+                for (String str:strs){
+                    empIdsName+=empMap.get(Integer.parseInt(str))+",";
+                }
+                empIdsName=empIdsName.equals("")||empIdsName==null ? "":empIdsName.substring(0,empIdsName.length()-1);
+                defect.setEmpIdsName(empIdsName);
+            }
+            if(defect.getaPlc()!=null){
+                String aPlc64=ImageToBase64ByLocal("/home/defect/img/"+defect.getaPlc());
+                if(aPlc64.equals("")){
+                    defect.setaPlc64("");
+                }else {
+                    defect.setaPlc64(aPlc64);
+                }
+            }
+            if(defect.getbPlc()!=null){
+                String bPlc64=ImageToBase64ByLocal("/home/defect/img/"+defect.getbPlc());
+                if(bPlc64.equals("")){
+                    defect.setbPlc64("");
+                }else{
+                    defect.setbPlc64(bPlc64);
+                }
+            }
+            return defect;
+        }
+        return null;
+    }
+
 
 }

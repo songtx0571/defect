@@ -39,6 +39,7 @@ public class Defect {
     private String delayETime;//延期结束时间
     private Integer delayBy;//延期申请人
     private Integer delayReason;//延期理由
+    private double realExecuteTime;//实际工时
 
     //虚字段
     private String createdByName;//创建人
@@ -420,5 +421,13 @@ public class Defect {
 
     public void setDelayReason(Integer delayReason) {
         this.delayReason = delayReason;
+    }
+
+    public double getRealExecuteTime() {
+        return realExecuteTime;
+    }
+
+    public void setRealExecuteTime(double realExecuteTime) {
+        this.realExecuteTime = realExecuteTime;
     }
 }

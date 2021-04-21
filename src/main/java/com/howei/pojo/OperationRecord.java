@@ -18,26 +18,33 @@ public class OperationRecord {
     private String createTime;
     private Integer isRead;
     private String longTime;
-
-
-    //添加字段
     private String sendName;
+    private String confirmTime;
 
     @Override
     public String toString() {
-        return "{" +
-                "\"id\":\'" + id + '\'' +
-                ",\"sendId\":\'" + sendId + '\'' +
-                ",\"receiveId\":\'" + receiveId + '\'' +
-                ",\"verb\":\'"+ verb + '\'' +
-                ",\"content\":\'" + content + '\'' +
-                ",\"type\":\'" + type + '\'' +
-                ",\"remark\":\'"+ remark + '\'' +
-                ",\"createTime\":\'"+ createTime + '\'' +
-                ",\"sendName\":\'" + sendName + '\'' +
-                ",\"isRead\":\'" + isRead + '\'' +
-                ",\"longTime\":\'" + longTime + '\'' +
+        return "OperationRecord{" +
+                "id=" + id +
+                ", sendId=" + sendId +
+                ", receiveId=" + receiveId +
+                ", verb='" + verb + '\'' +
+                ", content='" + content + '\'' +
+                ", type='" + type + '\'' +
+                ", remark='" + remark + '\'' +
+                ", createTime='" + createTime + '\'' +
+                ", isRead=" + isRead +
+                ", longTime='" + longTime + '\'' +
+                ", sendName='" + sendName + '\'' +
+                ", confirmTime='" + confirmTime + '\'' +
                 '}';
+    }
+
+    public String getConfirmTime() {
+        return confirmTime;
+    }
+
+    public void setConfirmTime(String confirmTime) {
+        this.confirmTime = confirmTime;
     }
 
     public String getLongTime() {

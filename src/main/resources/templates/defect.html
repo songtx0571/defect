@@ -82,15 +82,15 @@
             {{#  } else if(d.type == 4) { }}
             <span style="color: green;">已完成</span>
             {{#  } else if(d.type == 6) { }}
-            {{#  if(d.delayReason == 1){ }}
-            <span style="color: #001580;">等待备件</span>
-            {{#  } else if(d.delayReason == 2) { }}
-            <span style="color: #001580;">无法安措</span>
-            {{#  } else if(d.delayReason == 3) { }}
-            <span style="color: #001580;">停炉处理</span>
-            {{#  } else if(d.delayReason == 4) { }}
-            <span style="color: #001580;">继续观察</span>
-            {{#  } }}
+                {{#  if(d.delayReason == 1){ }}
+                <span style="color: #001580;">等待备件</span>
+                {{#  } else if(d.delayReason == 2) { }}
+                <span style="color: #001580;">无法安措</span>
+                {{#  } else if(d.delayReason == 3) { }}
+                <span style="color: #001580;">停炉处理</span>
+                {{#  } else if(d.delayReason == 4) { }}
+                <span style="color: #001580;">继续观察</span>
+                {{#  } }}
             {{#  } }}
         </script>
         <script type="text/html" id="tbOperationBar">
@@ -217,7 +217,6 @@
     </div>
     <!-- 详细信息 -->
     <div class="detailedInfoDiv">
-        <p id="detailedInfoP" style="display: none;"></p>
         <table>
             <thead>
             <tr><td colspan="10" style="text-align: center;font-weight: bold;font-size: 18px;">缺陷详单</td></tr>
@@ -287,7 +286,7 @@
             <thead>
             <tr>
                 <td colspan="10" align="center">
-                    <button type="button" class="layui-btn" onclick="cancel()">取消</button>
+                    <button type="button" class="layui-btn" onclick="cancel1()">取消</button>
                 </td>
             </tr>
             </thead>
